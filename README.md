@@ -4,7 +4,7 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.9-brightgreen)
 ![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2025.0.1-blue)
 ![Spring Cloud Alibaba](https://img.shields.io/badge/Spring%20Cloud%20Alibaba-2025.0.0.0-red)
-![Handcraft](https://img.shields.io/badge/Handcraft-99%25-blueviolet)
+![Handcraft](https://img.shields.io/badge/Handcraft-99.999%25-blueviolet)
 
 ☔ Experiments with Distributed Systems in Spring Cloud.
 

@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Updated Nacos Docker command in `README.md` to fix authentication error by setting `NACOS_AUTH_ENABLE=false`.
 
 ### Changed
+- Split "1. Service Registry" in `README.md` into two distinct sections: "1. Service Registry" and "2. Service Discovery" to better distinguish concepts.
+- Added code example for `DiscoveryClient` usage in `README.md`.
 - Renamed "Exploration 1" to "1. Service Registry (Nacos)" in `README.md` for a cleaner structure.
 - Refactored `README.md` to include "1. Service Registry (Nacos)" section, explaining concepts and implementation.
 - Updated architecture diagram in `README.md` to reflect actual ports: `service-order` (8001) and `service-product` (9001).

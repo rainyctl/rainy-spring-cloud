@@ -57,13 +57,13 @@ rainy-spring-cloud
 
 ## 1. Service Registry (Nacos)
 
-### What & How
-**Goal**: Enable services to find each other dynamically without hardcoding IP addresses and ports.
+### What & Why
+**Concept**: A central "phonebook" where microservices list their current contact info (IP & Port).
+**Importance**: In cloud environments, services scale up/down and change IPs dynamically. Hardcoding addresses is impossible.
 
-**Implementation**:
-1.  **Registry Server**: We use **Nacos** (running in Docker) as the central phonebook.
-2.  **Client Registration**: Each Spring Boot service uses `spring-cloud-starter-alibaba-nacos-discovery` to automatically register itself with Nacos upon startup.
-3.  **Discovery**: Services can query Nacos to find the current IP:Port of other services.
+### Action Items
+1.  **Start Server**: Run Nacos (the phonebook manager).
+2.  **Register Client**: Configure Spring Boot apps to tell Nacos "I am here!".
 
 ### Local Setup (Server)
 - Docker (standalone):
@@ -142,6 +142,36 @@ If configured correctly, you should see logs similar to this upon startup:
 ```text
 INFO ... [AbilityControlManager] Successfully initialize AbilityControlManager 
 INFO ... [NacosServiceRegistry] nacos registry, DEFAULT_GROUP service-order 192.168.1.88:8001 register finished 
+```
+
+## 2. Service Discovery
+
+### What & Why
+**Concept**: The ability for one service to look up the "phonebook" (Registry) to find the location of another service.
+**Importance**: Enables decoupling. `Service A` doesn't need to know where `Service B` is, it just asks the Registry.
+
+### How to Use
+Spring Cloud provides the `DiscoveryClient` abstraction.
+
+**Code Example (`DiscoveryTest.java`):**
+
+```java
+@Autowired
+private DiscoveryClient discoveryClient;
+
+@Test
+public void testDiscovery() {
+    // Get all known service names
+    for (String serviceId : discoveryClient.getServices()) {
+        System.out.println("Found Service: " + serviceId);
+        
+        // Get specific instances for a service
+        List<ServiceInstance> instances = discoveryClient.getInstances(serviceId);
+        for (ServiceInstance instance : instances) {
+            System.out.println(" - " + instance.getHost() + ":" + instance.getPort());
+        }
+    }
+}
 ```
 
 ### Pro Tip: Simulating Clusters in IntelliJ IDEA

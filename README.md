@@ -21,8 +21,8 @@ graph TD
     end
 
     subgraph Microservices
-        Order[("Service Order<br>(Port: 8081)")]
-        Product[("Service Product<br>(Port: TBD)")]
+        Order[("Service Order<br>(Port: 8001)")]
+        Product[("Service Product<br>(Port: 9001)")]
     end
 
     Order -->|Register & Discover| Nacos
@@ -111,6 +111,7 @@ sh bin/shutdown.sh
 
 ```properties
 spring.application.name=service-order
+server.port=8001
 spring.cloud.nacos.discovery.server-addr=127.0.0.1:8848
 
 # Nacos Authentication (Required if auth is enabled on server)
@@ -138,7 +139,7 @@ Notes:
 If configured correctly, you should see logs similar to this upon startup:
 ```text
 INFO ... [AbilityControlManager] Successfully initialize AbilityControlManager 
-INFO ... [NacosServiceRegistry] nacos registry, DEFAULT_GROUP service-order 192.168.1.88:8081 register finished 
+INFO ... [NacosServiceRegistry] nacos registry, DEFAULT_GROUP service-order 192.168.1.88:8001 register finished 
 ```
 
 ## Modules

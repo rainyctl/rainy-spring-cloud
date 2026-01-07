@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 - Updated Nacos Docker command in `README.md` to fix startup error by providing required `NACOS_AUTH_TOKEN` and identity keys.
 - Updated Nacos Docker command in `README.md` to fix authentication error by setting `NACOS_AUTH_ENABLE=false`.
 
+### Changed
+- Updated architecture diagram in `README.md` to reflect actual ports: `service-order` (8001) and `service-product` (9001).
+- Updated configuration examples and logs in `README.md` to match the new `service-order` port (8001).
+
 ### Added
 - Added "Coffee: 3" shield to `README.md`.
 - Added Nacos version badge to `README.md`.

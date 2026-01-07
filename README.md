@@ -40,15 +40,16 @@ rainy-spring-cloud
 - Docker (standalone):
 
 ```bash
-docker run -d --name nacos \
+TOKEN=$(openssl rand -base64 32)
+docker run --name nacos-standalone-derby \
   -e MODE=standalone \
-  -e NACOS_AUTH_ENABLE=true \
-  -e NACOS_AUTH_TOKEN=U2VjcmV0S2V5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5 \
+  -e NACOS_AUTH_TOKEN=$TOKEN \
   -e NACOS_AUTH_IDENTITY_KEY=nacos \
   -e NACOS_AUTH_IDENTITY_VALUE=nacos \
+  -p 8080:8080 \
   -p 8848:8848 \
   -p 9848:9848 \
-  nacos/nacos-server:latest
+  -d nacos/nacos-server:latest
 ```
 
 - Binary:

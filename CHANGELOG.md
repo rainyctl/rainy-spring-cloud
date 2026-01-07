@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Fixed
+- Updated Nacos Docker command in `README.md` to fix startup error by providing required `NACOS_AUTH_TOKEN` and identity keys.
 - Updated Nacos Docker command in `README.md` to fix authentication error by setting `NACOS_AUTH_ENABLE=false`.
 
 ### Added

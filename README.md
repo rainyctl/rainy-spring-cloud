@@ -4,9 +4,36 @@
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.9-brightgreen)
 ![Spring Cloud](https://img.shields.io/badge/Spring%20Cloud-2025.0.1-blue)
 ![Spring Cloud Alibaba](https://img.shields.io/badge/Spring%20Cloud%20Alibaba-2025.0.0.0-red)
+![Nacos](https://img.shields.io/badge/Nacos-3.1.1-blue)
 ![Handcraft](https://img.shields.io/badge/Handcraft-99.999%25-blueviolet)
+![Coffee](https://img.shields.io/badge/Coffee-3-6F4E37)
 
 ☔ Experiments with Distributed Systems in Spring Cloud.
+
+## Architecture
+
+```mermaid
+graph TD
+    subgraph Infrastructure
+        Nacos[("Nacos Server<br>(Registry & Config)")]
+        NacosPorts["Ports:<br>8080 (Console)<br>8848 (API)<br>9848 (gRPC)"]
+        Nacos --- NacosPorts
+    end
+
+    subgraph Microservices
+        Order[("Service Order<br>(Port: 8081)")]
+        Product[("Service Product<br>(Port: TBD)")]
+    end
+
+    Order -->|Register & Discover| Nacos
+    Product -->|Register & Discover| Nacos
+    
+    classDef service fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef infra fill:#9cf,stroke:#333,stroke-width:2px;
+    
+    class Order,Product service;
+    class Nacos infra;
+```
 
 ## Project Structure
 
@@ -75,21 +102,20 @@ sh bin/startup.sh -m standalone
 sh bin/shutdown.sh
 ```
 
-- Console: http://localhost:8848
-- Default login (if auth enabled): nacos / nacos
-- Use Nacos 2.x for compatibility with Spring Cloud Alibaba 2025.0.0.0
+- Console: http://localhost:8080
+- Tested on Nacos v3.1.1 (current latest)
+- First login credentials: username nacos, password nacos
 
 ### Wire Services to Nacos
-- application.yml:
+- application.properties (or application.yml):
 
-```yaml
-spring:
-  application:
-    name: service-order
-  cloud:
-    nacos:
-      discovery:
-        server-addr: 127.0.0.1:8848
+```properties
+spring.application.name=service-order
+spring.cloud.nacos.discovery.server-addr=127.0.0.1:8848
+
+# Nacos Authentication (Required if auth is enabled on server)
+spring.cloud.nacos.discovery.username=nacos
+spring.cloud.nacos.discovery.password=nacos
 ```
 
 - Spring Boot main class:
@@ -105,8 +131,15 @@ public class OrderApplication {
 ```
 
 Notes:
-- Ports: 8848 (HTTP console/API), 9848 (gRPC channels in Nacos 2.x)
+- Ports: 8080 (console UI), 8848 (HTTP API), 9848 (gRPC channels in Nacos 2.x/3.x)
 - Current modules are POM-only; add Spring Boot apps and configs to see registrations in the console
+
+### Verification
+If configured correctly, you should see logs similar to this upon startup:
+```text
+INFO ... [AbilityControlManager] Successfully initialize AbilityControlManager 
+INFO ... [NacosServiceRegistry] nacos registry, DEFAULT_GROUP service-order 192.168.1.88:8081 register finished 
+```
 
 ## Modules
 

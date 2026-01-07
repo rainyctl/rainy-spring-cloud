@@ -10,10 +10,12 @@ All notable changes to this project will be documented in this file.
 - Updated Nacos Docker command in `README.md` to fix authentication error by setting `NACOS_AUTH_ENABLE=false`.
 
 ### Changed
+- Refactored `README.md` to include "Exploration 1: Service Registry" section, explaining concepts and implementation.
 - Updated architecture diagram in `README.md` to reflect actual ports: `service-order` (8001) and `service-product` (9001).
 - Updated configuration examples and logs in `README.md` to match the new `service-order` port (8001).
 
 ### Added
+- Added "Pro Tip" to `README.md` for simulating service clusters in IntelliJ IDEA.
 - Added "Coffee: 3" shield to `README.md`.
 - Added Nacos version badge to `README.md`.
 - Added Architecture Mermaid diagram to `README.md` visualizing services and ports.

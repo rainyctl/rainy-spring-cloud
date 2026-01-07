@@ -55,15 +55,17 @@ rainy-spring-cloud
 - **Spring Cloud Alibaba**: 2025.0.0.0
 - **Service Discovery**: Nacos
 
-## Service Discovery (Nacos)
+## Exploration 1: Service Registry (Nacos)
 
-### What Nacos Offers
-- Service registration and discovery for microservices
-- Health checks and instance metadata (IP, port, weight, cluster)
-- Web console for observing services and instances
-- Optional configuration management via Nacos Config (not enabled in this repo yet)
+### What & How
+**Goal**: Enable services to find each other dynamically without hardcoding IP addresses and ports.
 
-### Local Setup
+**Implementation**:
+1.  **Registry Server**: We use **Nacos** (running in Docker) as the central phonebook.
+2.  **Client Registration**: Each Spring Boot service uses `spring-cloud-starter-alibaba-nacos-discovery` to automatically register itself with Nacos upon startup.
+3.  **Discovery**: Services can query Nacos to find the current IP:Port of other services.
+
+### Local Setup (Server)
 - Docker (standalone):
 
 Generate a token (any of these):
@@ -106,7 +108,7 @@ sh bin/shutdown.sh
 - Tested on Nacos v3.1.1 (current latest)
 - First login credentials: username nacos, password nacos
 
-### Wire Services to Nacos
+### Wire Services to Nacos (Client)
 - application.properties (or application.yml):
 
 ```properties
@@ -141,6 +143,15 @@ If configured correctly, you should see logs similar to this upon startup:
 INFO ... [AbilityControlManager] Successfully initialize AbilityControlManager 
 INFO ... [NacosServiceRegistry] nacos registry, DEFAULT_GROUP service-order 192.168.1.88:8001 register finished 
 ```
+
+### Pro Tip: Simulating Clusters in IntelliJ IDEA
+You can easily simulate a cluster (multiple instances of the same service) locally:
+1.  Open **Run/Debug Configurations**.
+2.  Select a service (e.g., `OrderMainApplication`).
+3.  Click **Copy Configuration** (or press `Ctrl+D` / `Cmd+D`).
+4.  In the new configuration, add to **Program arguments**: `--server.port=8082` (or any other free port).
+5.  Run both the original and the copy.
+6.  Check the Nacos Console: you will see `service-order` with **2 instances**.
 
 ## Modules
 

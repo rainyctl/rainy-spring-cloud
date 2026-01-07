@@ -204,7 +204,7 @@ graph LR
     
     User -->|Place Order| OrderAPI
     OrderAPI -->|1. Save Order| OrderDB
-    OrderAPI -->|2. Remote Call (RPC)| ProductAPI
+    OrderAPI -->|2. Remote Call - RPC| ProductAPI
     ProductAPI -->|3. Get Product Info| ProductDB
     ProductAPI -->|4. Return Info| OrderAPI
 ```

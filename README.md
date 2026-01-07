@@ -55,7 +55,7 @@ rainy-spring-cloud
 - **Spring Cloud Alibaba**: 2025.0.0.0
 - **Service Discovery**: Nacos
 
-## Exploration 1: Service Registry (Nacos)
+## 1. Service Registry (Nacos)
 
 ### What & How
 **Goal**: Enable services to find each other dynamically without hardcoding IP addresses and ports.

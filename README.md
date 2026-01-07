@@ -39,6 +39,21 @@ rainy-spring-cloud
 ### Local Setup
 - Docker (standalone):
 
+Generate a token (any of these):
+
+```bash
+# OpenSSL (recommended)
+openssl rand -base64 32
+
+# Python
+python - <<'PY'
+import os, base64; print(base64.b64encode(os.urandom(32)).decode())
+PY
+
+# Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
 ```bash
 TOKEN=$(openssl rand -base64 32)
 docker run --name nacos-standalone-derby \

@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Updated Nacos Docker command in `README.md` to fix authentication error by setting `NACOS_AUTH_ENABLE=false`.
 
 ### Added
+- Documented multiple ways to generate `NACOS_AUTH_TOKEN` (OpenSSL, Python, Node.js) and included inline generation in the Docker command.
 - Added Nacos section to `README.md` with local setup instructions and service wiring examples.
 - Added "Handcraft: 99%" badge to `README.md`.
 - Created `README.md` with project structure, technology stack, and module descriptions.

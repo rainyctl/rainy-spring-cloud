@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Updated configuration examples and logs in `README.md` to match the new `service-order` port (8001).
 
 ### Added
+- Added "3. Remote Procedure Call (RPC)" section to `README.md` including architecture diagram, DB schema plan, and mock data.
 - Added "Pro Tip" to `README.md` for simulating service clusters in IntelliJ IDEA.
 - Added "Coffee: 3" shield to `README.md`.
 - Added Nacos version badge to `README.md`.

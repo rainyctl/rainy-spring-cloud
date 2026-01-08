@@ -744,6 +744,44 @@ spring.config.import=nacos:service-order.properties
 *   **Group**: Default is `DEFAULT_GROUP`. To change: `spring.cloud.nacos.config.group=MY_GROUP` or in import: `nacos:service-order.properties?group=MY_GROUP`.
 *   **Data ID**: Explicitly defined in the import statement (`service-order.properties`).
 
+**Alternative: Single YAML File (`application.yml`)**
+Instead of multiple `.properties` files, you can use a single `.yml` file with `---` separators to define profiles.
+
+```yaml
+# Common Configuration (Base)
+spring:
+  application:
+    name: service-order
+  profiles:
+    active: dev # Default profile
+---
+# Dev Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: dev
+  cloud:
+    nacos:
+      config:
+        namespace: dev
+        group: DEFAULT_GROUP
+    import:
+      - nacos:service-order.properties
+      - nacos:service-common.properties?group=COMMON_GROUP
+---
+# Prod Profile Configuration
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    nacos:
+      config:
+        namespace: prod
+    import:
+      - nacos:service-order.properties
+```
+
 #### 5. Programmatic Config Listener
 Sometimes you need to trigger custom logic when a configuration changes (not just updating a Bean). You can register a `Listener` using the Nacos API.
 

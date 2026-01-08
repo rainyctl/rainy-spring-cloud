@@ -212,7 +212,32 @@ graph LR
 ### Plan
 1.  **Setup Database**: Create schema for Order and Product services.
 2.  **Shared Module**: Create `rainy-common` to hold shared entities (POJOs).
-3.  **Implement RPC**: Use OpenFeign (declarative HTTP client) to call Product Service from Order Service.
+3.  **Implement RPC**: Use `RestTemplate` + `DiscoveryClient` (Manual Load Balancing) to call Product Service from Order Service.
+
+### Implementation Summary (Crux)
+We implemented a **manual Remote Procedure Call (RPC)** to connect the services.
+
+**The Goal**: `Order Service` needs to talk to `Product Service` to get product details (price, name).
+
+**The "Simple" Approach (Current Implementation)**:
+Instead of using advanced tools like OpenFeign (yet), we did it manually to understand the core concept:
+1.  **Discovery**: We used `DiscoveryClient` to ask Nacos: *"Who handles 'service-product'?"*
+2.  **Selection**: We blindly picked the **first available instance** (`instances.get(0)`).
+3.  **Call**: We constructed a URL (`http://ip:port/product/{id}`) and fired a GET request using `RestTemplate`.
+
+**Code Snippet (`OrderServiceImpl.java`)**:
+```java
+// 1. Ask Nacos for "service-product" instances
+List<ServiceInstance> instances = discoveryClient.getInstances("service-product");
+
+// 2. Pick the first one (Manual Load Balancing strategy: First Available)
+ServiceInstance instance = instances.get(0);
+
+// 3. Build URL and call
+String url = String.format("http://%s:%s/product/%s", instance.getHost(), instance.getPort(), productId);
+Product product = restTemplate.getForObject(url, Product.class);
+```
+*This is the foundational "glue" of microservices before adding magic like LoadBalancer or Feign.*
 
 ### Database Setup
 Run the following SQL scripts to initialize your database.

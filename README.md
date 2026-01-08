@@ -406,7 +406,8 @@ After a successful call to `/order/create?userId=1&productId=2&count=3`, you wil
       "id": 2, 
       "name": "Spring Boot Mug", 
       "price": 25.50, 
-      "stock": 500 
+      "stock": 500,
+      "num": 3 
     } 
   ] 
 }

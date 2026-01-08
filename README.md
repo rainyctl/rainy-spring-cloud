@@ -321,7 +321,10 @@ public class Order {
     private Long userId;
     private String nickName;
     private BigDecimal totalAmount;
-    // ...
+    
+    // Not in DB table, but useful for JSON response!
+    @TableField(exist = false)
+    private List<Product> productList;
 }
 ```
 

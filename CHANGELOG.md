@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Updated configuration examples and logs in `README.md` to match the new `service-order` port (8001).
 
 ### Added
+- Updated `Order` entity in `README.md` to include `productList` with `@TableField(exist = false)` to match tutorial style.
 - Expanded "Mappers" section in `README.md` with `ProductMapper`, `OrderItemMapper`, and custom SQL examples.
 - Added "Code Structure (MyBatis-Plus)" to `README.md` with Entity and Mapper examples.
 - Added "Understanding Order Creation Logic" to `README.md` explaining the flow and generated SQL.

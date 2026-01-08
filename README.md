@@ -540,6 +540,9 @@ Currently, **Service Order** is fully configured to use Nacos Config.
 ```properties
 # Tell Spring to load config from Nacos
 spring.config.import=nacos:service-order.properties
+
+# You can also specify the Group:
+# spring.config.import=nacos:service-order.properties?group=DEFAULT_GROUP
 ```
 
 #### 3. Create Config in Nacos
@@ -668,7 +671,7 @@ If `shared-database.properties` and `service-order.properties` both define `time
 ```properties
 # 1. shared-database (Base config)
 # 2. service-order (Specific config - Overrides shared if collision)
-spring.config.import=nacos:shared-database.properties,nacos:service-order.properties
+spring.config.import=nacos:shared-database.properties?group=COMMON_GROUP,nacos:service-order.properties
 ```
 
 #### 3. Data Organization (Namespace, Group, Data ID)

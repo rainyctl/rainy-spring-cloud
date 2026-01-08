@@ -326,13 +326,39 @@ public class Order {
 ```
 
 **Mappers**
-Interfaces that handle the SQL execution. No implementation needed!
+Interfaces that handle the SQL execution. By extending `BaseMapper<T>`, you get instant CRUD powers.
+
+**1. ProductMapper**
+```java
+@Mapper
+public interface ProductMapper extends BaseMapper<Product> {
+    // Inherited methods:
+    // int insert(Product entity);
+    // Product selectById(Serializable id);
+    // int updateById(Product entity);
+    // int deleteById(Serializable id);
+    // ... and many more!
+}
+```
+
+**2. OrderMapper (with Custom SQL)**
+If the built-in methods aren't enough, you can write your own SQL easily.
 
 ```java
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
-    // Basic CRUD is built-in!
-    // insert(), selectById(), update(), delete()...
+    
+    // Example: Custom SQL with annotation
+    @Select("SELECT * FROM t_order WHERE user_id = #{userId}")
+    List<Order> findByUserId(Long userId);
+}
+```
+
+**3. OrderItemMapper**
+```java
+@Mapper
+public interface OrderItemMapper extends BaseMapper<OrderItem> {
+    // Just empty is fine for standard usage!
 }
 ```
 

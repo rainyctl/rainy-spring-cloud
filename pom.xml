@@ -15,6 +15,7 @@
     <description>rainy-spring-cloud</description>
     <modules>
         <module>services</module>
+        <module>rainy-common</module>
     </modules>
     <packaging>pom</packaging>
     <url/>

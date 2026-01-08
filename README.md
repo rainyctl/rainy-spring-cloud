@@ -391,6 +391,73 @@ public interface OrderItemMapper extends BaseMapper<OrderItem> {
 }
 ```
 
+## 4. Load Balancing
+
+### Why?
+In a real production environment, you will likely have multiple instances of `service-product` running (e.g., on ports 8002, 8003, 8004) to handle high traffic. If `service-order` hardcodes the URL to `http://localhost:8002`, it defeats the purpose of clustering. We need a way to distribute requests across all available instances.
+
+### Dependencies
+Since Spring Cloud 2020.0, the old Netflix Ribbon has been removed. We now use **Spring Cloud LoadBalancer**.
+
+Ensure `service-order/pom.xml` includes:
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+</dependency>
+```
+
+### Approach 1: `LoadBalancerClient` (Manual)
+This is the "under-the-hood" way. You explicitly ask the Load Balancer to pick a service instance for you.
+
+```java
+@Autowired
+private LoadBalancerClient loadBalancerClient;
+
+public void callService() {
+    // 1. Ask Load Balancer to choose an instance of 'service-product'
+    ServiceInstance instance = loadBalancerClient.choose("service-product");
+    
+    // 2. Build the URL using the chosen instance's IP and Port
+    String url = String.format("http://%s:%s/product/%s", instance.getHost(), instance.getPort(), 1);
+    
+    // 3. Make the call
+    restTemplate.getForObject(url, Product.class);
+}
+```
+
+### Approach 2: `@LoadBalanced` Annotation (The "Magic" Way)
+This is the standard, most convenient way. Spring injects an interceptor into your `RestTemplate` that automatically resolves service names to IPs.
+
+**1. Configure RestTemplate**
+Add `@LoadBalanced` to your bean definition.
+
+```java
+@Configuration
+public class OrderConfig {
+    @Bean
+    @LoadBalanced // <--- The Magic Annotation
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+}
+```
+
+**2. Use Service Name in URL**
+Now, instead of `localhost:8002`, you use the **Service Name** (`service-product`) registered in Nacos.
+
+```java
+// The URL is now host-agnostic!
+String url = "http://service-product/product/" + productId;
+Product product = restTemplate.getForObject(url, Product.class);
+```
+
+**How it works:**
+1. Spring sees `http://service-product/...`.
+2. The `LoadBalancerInterceptor` pauses the request.
+3. It asks the Load Balancer: "Give me an instance for 'service-product'".
+4. It rewrites the URL to `http://192.168.1.5:8002/...` and lets the request proceed.
+
 ## Modules
 
 ### Root Configuration

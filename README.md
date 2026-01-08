@@ -659,15 +659,61 @@ graph LR
     style Low fill:#99ccff
 ```
 
-#### 2. Multiple Imports
-You can import multiple configuration files from Nacos using `spring.config.import`. This is useful for sharing common configurations (e.g., database settings) across services.
+#### 2. Multiple Imports & Priority
+You can import multiple configuration files from Nacos using `spring.config.import`.
+
+**Priority Rule**: In a list of imports, **later imports override earlier ones**.
+If `shared-database.properties` and `service-order.properties` both define `timeout`, the one listed **last** "wins".
 
 ```properties
-# Import main config AND shared config
-spring.config.import=nacos:service-order.properties,nacos:shared-database.properties
+# 1. shared-database (Base config)
+# 2. service-order (Specific config - Overrides shared if collision)
+spring.config.import=nacos:shared-database.properties,nacos:service-order.properties
 ```
 
-#### 3. Programmatic Config Listener
+#### 3. Data Organization (Namespace, Group, Data ID)
+Nacos uses a hierarchical model to organize configurations, solving the problem of multi-environment and multi-service management.
+
+*   **Namespace**: **Isolation**. Typically used for Environments (Dev, Test, Prod) or Tenants.
+    *   Default: `public`.
+*   **Group**: **Grouping**. Used for separating services or business units.
+    *   Default: `DEFAULT_GROUP`.
+*   **Data ID**: **File**. The actual configuration file for a service.
+    *   Format: `service-name.properties`.
+
+```mermaid
+graph LR
+    subgraph Env ["SpringBoot Environment"]
+        Dev[Dev Profile]
+        Prod[Prod Profile]
+    end
+
+    subgraph Nacos ["Nacos Data Model"]
+        NS[**Namespace**<br>Isolation (Dev/Test/Prod)]
+        Group[**Group**<br>Category (DEFAULT_GROUP)]
+        DataID[**Data ID**<br>Config File (service.properties)]
+    end
+
+    Dev -->|"Activates"| NS
+    NS -->|"Contains"| Group
+    Group -->|"Contains"| DataID
+    
+    style NS fill:#e1f5fe,stroke:#01579b
+    style Group fill:#e8f5e9,stroke:#1b5e20
+    style DataID fill:#fff3e0,stroke:#e65100
+```
+
+#### 4. Common Workflow
+1.  **Design**: Decide on your Namespace (e.g., `dev`) and Data ID naming convention.
+2.  **Nacos Console**:
+    *   Create a **Namespace** (e.g., id=`dev`, name=`Development`).
+    *   Switch to that Namespace.
+    *   Create a **Config**: Data ID=`service-order.properties`, Group=`DEFAULT_GROUP`.
+3.  **Spring Boot**:
+    *   Configure `spring.cloud.nacos.config.namespace=dev` (use the ID, not name).
+    *   Configure `spring.config.import`.
+
+#### 5. Programmatic Config Listener
 Sometimes you need to trigger custom logic when a configuration changes (not just updating a Bean). You can register a `Listener` using the Nacos API.
 
 **Example (`OrderMainApplication.java`)**:

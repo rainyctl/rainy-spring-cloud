@@ -480,6 +480,14 @@ Product product = restTemplate.getForObject(url, Product.class);
 3. It asks the Load Balancer: "Give me an instance for 'service-product'".
 4. It rewrites the URL to `http://192.168.1.5:8002/...` and lets the request proceed.
 
+### Caching Mechanism (Important)
+The client maintains a **local cache** of the service registry (the "phonebook").
+
+1.  **First Call**: The client pulls the list of available instances from Nacos and caches it locally.
+2.  **Subsequent Calls**: The client uses the **local cache** to pick an instance (Load Balancing), avoiding a network trip to Nacos for every request.
+3.  **Background Updates**: The cache is periodically updated to reflect changes (e.g., new instances or crashes).
+4.  **Resilience**: If Nacos goes down, your services can **still communicate** because they rely on the local cache!
+
 ## Modules
 
 ### Root Configuration

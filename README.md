@@ -609,6 +609,31 @@ public class OrderController {
 2.  Change the values in Nacos Console and Publish.
 3.  Call the endpoint again. You should see the **new values immediately** without restarting the service!
 
+```mermaid
+graph TD
+    subgraph Nacos ["Nacos Server"]
+        Config["Config Data<br>(service-order.properties)"]
+    end
+    
+    subgraph Service ["Order Service"]
+        Boot["Startup / Bootstrap"]
+        AppEnv["Spring Environment"]
+        Bean["@RefreshScope Bean<br>or<br>@ConfigurationProperties"]
+    end
+    
+    Boot -->|"1. Fetch Config"| Config
+    Config -->|"2. Return Properties"| Boot
+    Boot -->|"3. Load into"| AppEnv
+    AppEnv -->|"4. Inject Values"| Bean
+    
+    %% Dynamic Update Flow
+    User((User/Admin)) -->|"5. Update Config"| Config
+    Config -.->|"6. Push Change Event"| Service
+    Service -.->|"7. Refresh Context"| Bean
+    
+    style Config fill:#ffcc00,stroke:#333,stroke-width:2px,color:black
+```
+
 ## Modules
 
 ### Root Configuration

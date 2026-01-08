@@ -569,7 +569,42 @@ public class OrderController {
 }
 ```
 
-#### 5. Verification
+#### 5. Alternative (Recommended): Configuration Properties
+Instead of using `@Value` and `@RefreshScope` on every controller, you can use a Type-Safe Configuration Properties class.
+
+**Benefit**:
+- **No `@RefreshScope` needed** on the controller or the properties bean itself (Spring Cloud automatically updates `@ConfigurationProperties` beans).
+- Strong typing and validation.
+
+**1. Define Properties Class**
+`OrderServiceProperties.java`:
+```java
+@Component
+@ConfigurationProperties(prefix = "order")
+@Data
+public class OrderServiceProperties {
+    private String timeout;
+    private String autoConfirm;
+}
+```
+
+**2. Inject and Use**
+`OrderController.java`:
+```java
+@RestController
+@RequiredArgsConstructor
+public class OrderController {
+    
+    private final OrderServiceProperties orderServiceProperties;
+
+    @GetMapping("/config")
+    public String getConfig() {
+        return orderServiceProperties.toString();
+    }
+}
+```
+
+#### 6. Verification
 1.  Call `GET http://localhost:8001/config`. You should see the values you set in Nacos.
 2.  Change the values in Nacos Console and Publish.
 3.  Call the endpoint again. You should see the **new values immediately** without restarting the service!

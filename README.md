@@ -513,6 +513,67 @@ graph TD
     style Cache fill:#ffcc00,stroke:#333,stroke-width:2px,color:black
 ```
 
+## 5. Distributed Configuration (Nacos Config)
+
+### What & Why
+**Concept**: Centralizing configuration files (like `application.properties`) in the server (Nacos) instead of hardcoding them in each service.
+**Importance**:
+1.  **Dynamic Updates**: Change config on the fly without restarting the service.
+2.  **Central Management**: View and manage all configs in one place.
+
+### Implementation Status
+Currently, **Service Order** is fully configured to use Nacos Config.
+
+### How to Use
+
+#### 1. Add Dependency
+`service-order/pom.xml`:
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+</dependency>
+```
+
+#### 2. Configure Import (Spring Boot 2.4+)
+`service-order/src/main/resources/application.properties`:
+```properties
+# Tell Spring to load config from Nacos
+spring.config.import=nacos:service-order.properties
+```
+
+#### 3. Create Config in Nacos
+1.  Go to Nacos Console: `http://localhost:8080/nacos` -> **Config Management** -> **Configurations**.
+2.  Click **+** (Create).
+3.  **Data ID**: `service-order.properties` (Must match the import above).
+4.  **Group**: `DEFAULT_GROUP`.
+5.  **Configuration Content**:
+    ```properties
+    order.timeout=5000
+    order.auto-confirm=true
+    ```
+6.  Click **Publish**.
+
+#### 4. Dynamic Refresh (`@RefreshScope`)
+We use `@RefreshScope` on `OrderController` to support hot reloading.
+
+```java
+@RestController
+@RefreshScope // <--- Triggers bean reload when config changes
+public class OrderController {
+    
+    @Value("${order.timeout}")
+    String orderTimeout;
+    
+    // ...
+}
+```
+
+#### 5. Verification
+1.  Call `GET http://localhost:8001/config`. You should see the values you set in Nacos.
+2.  Change the values in Nacos Console and Publish.
+3.  Call the endpoint again. You should see the **new values immediately** without restarting the service!
+
 ## Modules
 
 ### Root Configuration

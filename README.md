@@ -391,6 +391,27 @@ public interface OrderItemMapper extends BaseMapper<OrderItem> {
 }
 ```
 
+#### 4. Response Example
+After a successful call to `/order/create?userId=1&productId=2&count=3`, you will receive a JSON response similar to this:
+
+```json
+{ 
+  "id": 14, 
+  "userId": 1, 
+  "nickName": "DIO", 
+  "address": "Cairo, Egypt", 
+  "totalAmount": 76.50, 
+  "productList": [ 
+    { 
+      "id": 2, 
+      "name": "Spring Boot Mug", 
+      "price": 25.50, 
+      "stock": 500 
+    } 
+  ] 
+}
+```
+
 ## 4. Load Balancing
 
 ### Why?

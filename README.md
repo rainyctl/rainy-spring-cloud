@@ -307,6 +307,35 @@ INSERT INTO t_order_item (order_id, product_id, product_name, product_price, num
 VALUES (5001, 100, 'Rainy Cloud Umbrella', 99.00, 1);
 ```
 
+#### 3. Code Structure (MyBatis-Plus)
+
+**Entities**
+These classes map directly to your database tables.
+
+```java
+@Data
+@TableName("t_order")
+public class Order {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    private Long userId;
+    private String nickName;
+    private BigDecimal totalAmount;
+    // ...
+}
+```
+
+**Mappers**
+Interfaces that handle the SQL execution. No implementation needed!
+
+```java
+@Mapper
+public interface OrderMapper extends BaseMapper<Order> {
+    // Basic CRUD is built-in!
+    // insert(), selectById(), update(), delete()...
+}
+```
+
 ## Modules
 
 ### Root Configuration

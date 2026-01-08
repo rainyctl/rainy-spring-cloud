@@ -628,3 +628,17 @@ If you encounter `UnsatisfiedDependencyException` or bean creation errors relate
 If you see `NoSuchBeanDefinitionException` for your mappers:
 1. Ensure your mapper interfaces are annotated with `@Mapper`.
 2. Or use `@MapperScan("cc.rainyctl.services.*.mapper")` in your main application class.
+
+### Nacos Config Data ID
+If your configuration is not being loaded (e.g., values remain null or default):
+
+**Issue:** You created a config with Data ID `service-order` in Nacos, but your app expects a file extension.
+
+**Solution:** The Data ID **must include the extension**.
+*   **Wrong:** `service-order`
+*   **Correct:** `service-order.properties` (or `.yaml` if using YAML)
+
+This must match what you defined in `spring.config.import`:
+```properties
+spring.config.import=nacos:service-order.properties
+```

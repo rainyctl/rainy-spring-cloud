@@ -488,6 +488,31 @@ The client maintains a **local cache** of the service registry (the "phonebook")
 3.  **Background Updates**: The cache is periodically updated to reflect changes (e.g., new instances or crashes).
 4.  **Resilience**: If Nacos goes down, your services can **still communicate** because they rely on the local cache!
 
+```mermaid
+graph TD
+    subgraph OrderService ["Order Service"]
+        RT[RestTemplate]
+        LB[LoadBalancer]
+        Cache[("Local Instance Cache")]
+    end
+
+    Nacos[("Nacos Registry")]
+    
+    subgraph ProductService ["Product Service Cluster"]
+        P1[Instance 1]
+        P2[Instance 2]
+    end
+
+    %% Flow
+    RT -->|"1. Request"| LB
+    LB -->|"2. Get Instances"| Cache
+    Cache -.->|"3. Sync (First Time / Periodic)"| Nacos
+    LB -->|"4. Select Instance"| P1
+    RT -->|"5. HTTP Call"| P1
+
+    style Cache fill:#ffcc00,stroke:#333,stroke-width:2px,color:black
+```
+
 ## Modules
 
 ### Root Configuration

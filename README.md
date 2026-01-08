@@ -281,7 +281,8 @@ When a user places an order (e.g., `GET /order/create?userId=1&productId=2`), th
 2.  **Remote Call (RPC)**: `OrderService` asks `ProductService` for the price of `productId`.
 3.  **Calculate Total**: Price * 1 (simple example).
 4.  **Save Order**: Insert a row into `t_order`.
-5.  **Save Item**: Insert a row into `t_order_item` to link the product to this order.
+    *   *Magic*: MyBatis-Plus automatically fills `order.id` with the new database ID (e.g., 5001) right after insertion.
+5.  **Save Item**: Insert a row into `t_order_item` using that new `order.id` to link them.
 
 #### 2. Behind the Scenes (SQL)
 Here is what the generated SQL looks like for a typical transaction:

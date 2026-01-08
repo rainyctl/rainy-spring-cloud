@@ -272,6 +272,41 @@ INSERT INTO t_product (name, price, stock) VALUES
 ('Java 17 Sticker', 5.00, 1000);
 ```
 
+### Understanding Order Creation Logic
+When a user places an order (e.g., `GET /order/create?userId=1&productId=100`), the following happens behind the scenes.
+**Note**: We use `MyBatis-Plus` to simplify database interactions.
+
+#### 1. The Logic Flow
+1.  **Receive Request**: `OrderController` receives `userId` and `productId`.
+2.  **Remote Call (RPC)**: `OrderService` asks `ProductService` for the price of `productId`.
+3.  **Calculate Total**: Price * 1 (simple example).
+4.  **Save Order**: Insert a row into `t_order`.
+5.  **Save Item**: Insert a row into `t_order_item` to link the product to this order.
+
+#### 2. Behind the Scenes (SQL)
+Here is what the generated SQL looks like for a typical transaction:
+
+**Step A: Get Product (RPC Call)**
+*Executed by Product Service*
+```sql
+SELECT id, name, price, stock FROM t_product WHERE id = 100;
+```
+
+**Step B: Save Order Header**
+*Executed by Order Service*
+```sql
+INSERT INTO t_order (user_id, nick_name, total_amount, address) 
+VALUES (1, 'RainyUser', 99.00, 'Cloud City');
+```
+*MyBatis-Plus automatically retrieves the new `id` (e.g., `5001`).*
+
+**Step C: Save Order Item**
+*Executed by Order Service*
+```sql
+INSERT INTO t_order_item (order_id, product_id, product_name, product_price, num) 
+VALUES (5001, 100, 'Rainy Cloud Umbrella', 99.00, 1);
+```
+
 ## Modules
 
 ### Root Configuration

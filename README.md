@@ -634,6 +634,65 @@ graph TD
     style Config fill:#ffcc00,stroke:#333,stroke-width:2px,color:black
 ```
 
+### Advanced Configuration Topics
+
+#### 1. Config Priorities
+When you use Nacos Config, it acts as an "External Configuration" source. In Spring Boot's property resolution order:
+
+1.  **High Priority**: Nacos Config (External)
+2.  **Low Priority**: Local `application.properties` / `application.yml`
+
+If a key exists in both, **Nacos wins**.
+
+```mermaid
+graph LR
+    High[High Priority Config<br>(Nacos)]
+    Low[Low Priority Config<br>(Local)]
+    
+    High --> Merge
+    Low --> Merge
+    
+    Merge{Merge Strategy<br>External Overrides Local} --> Effective[Effective Config]
+    Effective --> Env[Spring Environment]
+    
+    style High fill:#ff9999
+    style Low fill:#99ccff
+```
+
+#### 2. Multiple Imports
+You can import multiple configuration files from Nacos using `spring.config.import`. This is useful for sharing common configurations (e.g., database settings) across services.
+
+```properties
+# Import main config AND shared config
+spring.config.import=nacos:service-order.properties,nacos:shared-database.properties
+```
+
+#### 3. Programmatic Config Listener
+Sometimes you need to trigger custom logic when a configuration changes (not just updating a Bean). You can register a `Listener` using the Nacos API.
+
+**Example (`OrderMainApplication.java`)**:
+We added a listener to log changes whenever `service-order.properties` is updated.
+
+```java
+@Bean
+public ApplicationRunner nacosConfigListener(NacosConfigManager nacosConfigManager) {
+    return args -> {
+        ConfigService configService = nacosConfigManager.getConfigService();
+        configService.addListener("service-order.properties", "DEFAULT_GROUP", new Listener() {
+            @Override
+            public Executor getExecutor() {
+                return Executors.newFixedThreadPool(4); // Async execution
+            }
+
+            @Override
+            public void receiveConfigInfo(String configInfo) {
+                log.info("Nacos config info changed to: {}", configInfo);
+            }
+        });
+    };
+}
+```
+
 ## Modules
 
 ### Root Configuration

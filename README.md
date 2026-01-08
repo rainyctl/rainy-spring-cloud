@@ -646,14 +646,14 @@ If a key exists in both, **Nacos wins**.
 
 ```mermaid
 graph LR
-    High[High Priority Config<br>(Nacos)]
-    Low[Low Priority Config<br>(Local)]
+    High["High Priority Config<br>(Nacos)"]
+    Low["Low Priority Config<br>(Local)"]
     
     High --> Merge
     Low --> Merge
     
-    Merge{Merge Strategy<br>External Overrides Local} --> Effective[Effective Config]
-    Effective --> Env[Spring Environment]
+    Merge{"Merge Strategy<br>External Overrides Local"} --> Effective["Effective Config"]
+    Effective --> Env["Spring Environment"]
     
     style High fill:#ff9999
     style Low fill:#99ccff

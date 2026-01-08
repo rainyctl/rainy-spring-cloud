@@ -71,7 +71,7 @@ rainy-spring-cloud
 Generate a token (any of these):
 
 ```bash
-# OpenSSL (recommended)
+# OpenSSL (Recommended ★)
 openssl rand -base64 32
 
 # Python
@@ -448,7 +448,7 @@ public void callService() {
 }
 ```
 
-### Approach 2: `@LoadBalanced` Annotation (The "Magic" Way)
+### Approach 2: `@LoadBalanced` Annotation (Recommended ★)
 This is the standard, most convenient way. Spring injects an interceptor into your `RestTemplate` that automatically resolves service names to IPs.
 
 **1. Configure RestTemplate**
@@ -569,7 +569,7 @@ public class OrderController {
 }
 ```
 
-#### 5. Alternative (Recommended): Configuration Properties
+#### 5. Alternative (Recommended ★): Configuration Properties
 Instead of using `@Value` and `@RefreshScope` on every controller, you can use a Type-Safe Configuration Properties class.
 
 **Benefit**:

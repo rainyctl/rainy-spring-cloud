@@ -273,7 +273,7 @@ INSERT INTO t_product (name, price, stock) VALUES
 ```
 
 ### Understanding Order Creation Logic
-When a user places an order (e.g., `GET /order/create?userId=1&productId=100`), the following happens behind the scenes.
+When a user places an order (e.g., `GET /order/create?userId=1&productId=2`), the following happens behind the scenes.
 **Note**: We use `MyBatis-Plus` to simplify database interactions.
 
 #### 1. The Logic Flow
@@ -289,14 +289,14 @@ Here is what the generated SQL looks like for a typical transaction:
 **Step A: Get Product (RPC Call)**
 *Executed by Product Service*
 ```sql
-SELECT id, name, price, stock FROM t_product WHERE id = 100;
+SELECT id, name, price, stock FROM t_product WHERE id = 2;
 ```
 
 **Step B: Save Order Header**
 *Executed by Order Service*
 ```sql
 INSERT INTO t_order (user_id, nick_name, total_amount, address) 
-VALUES (1, 'RainyUser', 99.00, 'Cloud City');
+VALUES (1, 'RainyUser', 25.50, 'Cloud City');
 ```
 *MyBatis-Plus automatically retrieves the new `id` (e.g., `5001`).*
 
@@ -304,7 +304,7 @@ VALUES (1, 'RainyUser', 99.00, 'Cloud City');
 *Executed by Order Service*
 ```sql
 INSERT INTO t_order_item (order_id, product_id, product_name, product_price, num) 
-VALUES (5001, 100, 'Rainy Cloud Umbrella', 99.00, 1);
+VALUES (5001, 2, 'Spring Boot Mug', 25.50, 1);
 ```
 
 #### 3. Code Structure (MyBatis-Plus)

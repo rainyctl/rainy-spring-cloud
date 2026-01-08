@@ -689,9 +689,9 @@ graph LR
     end
 
     subgraph Nacos ["Nacos Data Model"]
-        NS[**Namespace**<br>Isolation (Dev/Test/Prod)]
-        Group[**Group**<br>Category (DEFAULT_GROUP)]
-        DataID[**Data ID**<br>Config File (service.properties)]
+        NS["**Namespace**<br>Isolation (Dev/Test/Prod)"]
+        Group["**Group**<br>Category (DEFAULT_GROUP)"]
+        DataID["**Data ID**<br>Config File (service.properties)"]
     end
 
     Dev -->|"Activates"| NS
@@ -703,15 +703,46 @@ graph LR
     style DataID fill:#fff3e0,stroke:#e65100
 ```
 
-#### 4. Common Workflow
-1.  **Design**: Decide on your Namespace (e.g., `dev`) and Data ID naming convention.
-2.  **Nacos Console**:
-    *   Create a **Namespace** (e.g., id=`dev`, name=`Development`).
-    *   Switch to that Namespace.
-    *   Create a **Config**: Data ID=`service-order.properties`, Group=`DEFAULT_GROUP`.
-3.  **Spring Boot**:
-    *   Configure `spring.cloud.nacos.config.namespace=dev` (use the ID, not name).
-    *   Configure `spring.config.import`.
+#### 4. Multi-Environment Support (Best Practice)
+To support **Dev**, **Test**, and **Prod** environments, we use **Namespaces**.
+
+**1. Create Namespaces in Nacos**
+*   Log in to Nacos Console -> **Namespaces** -> **Create Namespace**.
+*   **Name**: `Dev`, **ID**: `dev` (Manually set the ID for easier config; otherwise it's a UUID).
+*   Repeat for `test` and `prod`.
+
+**2. Create Configs**
+*   Switch to `Dev` namespace. Create `service-order.properties` with dev settings.
+*   Switch to `Prod` namespace. Create `service-order.properties` with prod settings.
+
+**3. Activate in Spring Boot**
+Use Spring Profiles to switch namespaces.
+
+**application.properties** (Common):
+```properties
+spring.application.name=service-order
+# Default profile
+spring.profiles.active=dev
+```
+
+**application-dev.properties**:
+```properties
+# Connect to 'dev' namespace
+spring.cloud.nacos.config.namespace=dev
+spring.config.import=nacos:service-order.properties
+```
+
+**application-prod.properties**:
+```properties
+# Connect to 'prod' namespace
+spring.cloud.nacos.config.namespace=prod
+spring.config.import=nacos:service-order.properties
+```
+
+**4. Specifying Group and Data ID**
+*   **Namespace**: `spring.cloud.nacos.config.namespace`
+*   **Group**: Default is `DEFAULT_GROUP`. To change: `spring.cloud.nacos.config.group=MY_GROUP` or in import: `nacos:service-order.properties?group=MY_GROUP`.
+*   **Data ID**: Explicitly defined in the import statement (`service-order.properties`).
 
 #### 5. Programmatic Config Listener
 Sometimes you need to trigger custom logic when a configuration changes (not just updating a Bean). You can register a `Listener` using the Nacos API.

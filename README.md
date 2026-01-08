@@ -549,10 +549,10 @@ spring.config.import=nacos:service-order.properties
 4.  **Group**: `DEFAULT_GROUP`.
 5.  **Configuration Content**:
     ```properties
-    order.timeout=5000
-    order.auto-confirm=true
+    order.timeout=300min
+    order.auto-confirm=7d
     ```
-6.  Click **Publish**.
+    6.  Click **Publish**.
 
 #### 4. Dynamic Refresh (`@RefreshScope`)
 We use `@RefreshScope` on `OrderController` to support hot reloading.

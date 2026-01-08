@@ -406,6 +406,23 @@ The `services` module serves as a grouping for the microservices in the system.
 - **service-order**: Responsible for order processing and management.
 - **service-product**: Responsible for product catalog and inventory management.
 
+## API Reference
+
+### Product Service (`service-product`)
+Base URL: `http://localhost:8002` (or whatever port you configured)
+
+| Method | Endpoint | Description | Parameters |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/hello` | Health check / Simple greeting | None |
+| `GET` | `/product/{id}` | Get product details by ID | `id` (Path Variable): Product ID |
+
+### Order Service (`service-order`)
+Base URL: `http://localhost:8001` (or whatever port you configured)
+
+| Method | Endpoint | Description | Parameters |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/order/create` | Create a new order | `userId` (Query): User ID<br>`productId` (Query): Product ID<br>`count` (Query, default=1): Quantity |
+
 ## Troubleshooting
 
 ### MyBatis-Plus Dependency Issue

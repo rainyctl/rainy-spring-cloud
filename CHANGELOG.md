@@ -5,7 +5,25 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Documentation
-- Added "Troubleshooting" section to `README.md` covering MyBatis-Plus dependency issues and Mapper scanning.
+- **Distributed Configuration**: Added comprehensive guide covering:
+    - Basic setup with `spring-cloud-starter-alibaba-nacos-config`.
+    - Dynamic refresh using `@RefreshScope` and recommended `@ConfigurationProperties` approach.
+    - Config priority rules (Nacos vs Local, Import order).
+    - Multi-environment support using Namespaces (Dev/Test/Prod).
+    - Advanced config organization (Namespace, Group, Data ID) with Mermaid diagrams.
+    - Single YAML file support for multi-profile configuration.
+    - `spring.config.import` syntax for specific Groups.
+    - Programmatic Nacos Config Listener example.
+- **Load Balancing**: Added section covering:
+    - Manual `LoadBalancerClient` usage.
+    - Recommended `@LoadBalanced` annotation approach.
+    - Service instance caching mechanism with Mermaid diagram.
+- **Service Discovery**: Added IntelliJ IDEA cluster simulation tip.
+- **Order Service**: Added JSON response example for order creation.
+- **General**:
+    - Added "Coffee: 8" shield to `README.md`.
+    - Added visual stars (★) to recommended approaches.
+    - Added "Troubleshooting" section covering MyBatis-Plus dependency issues and Mapper scanning.
 
 ### Fixed
 - Aligned Nacos Docker command with official docs: added 8080 port and removed hardcoded token, using a generated token instead.

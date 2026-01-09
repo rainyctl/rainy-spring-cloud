@@ -879,3 +879,18 @@ This must match what you defined in `spring.config.import`:
 ```properties
 spring.config.import=nacos:service-order.properties
 ```
+
+## Future Explorations
+
+We are currently using Nacos in **Standalone Mode** with the embedded **Derby** database for simplicity. However, for a production-grade environment, we should explore:
+
+1.  **Nacos with MySQL**:
+    *   By default, Nacos uses Derby. Switching to MySQL ensures data persistence and allows easier management of config data.
+    *   Requires executing `nacos-mysql.sql` and setting `spring.datasource.platform=mysql` in `custom.properties`.
+
+2.  **Nacos Cluster Mode**:
+    *   To ensure High Availability (HA), we should deploy a cluster of Nacos servers (3+ nodes).
+    *   Requires a Load Balancer (like Nginx) in front of the cluster.
+    *   Configuring `cluster.conf` with IP:Port of all nodes.
+
+For more details, refer to the [Nacos Official Documentation](https://nacos.io/en-us/docs/cluster-mode-quick-start.html).

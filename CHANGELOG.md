@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
     - Setup instructions (Dependency, `@EnableFeignClients`).
     - Usage example (`@FeignClient` interface).
     - Integration with Spring Cloud LoadBalancer.
+    - Added third-party API call example (Weather API).
+    - **Timeout Control**: Added section on `connectTimeout` and `readTimeout` configuration with Mermaid flow diagram.
 - **Distributed Configuration**: Added comprehensive guide covering:
     - Basic setup with `spring-cloud-starter-alibaba-nacos-config`.
     - Dynamic refresh using `@RefreshScope` and recommended `@ConfigurationProperties` approach.
@@ -35,6 +37,7 @@ All notable changes to this project will be documented in this file.
     - Manual `LoadBalancerClient` usage.
     - Recommended `@LoadBalanced` annotation approach.
     - Service instance caching mechanism with Mermaid diagram.
+    - Added client-side vs server-side comparison notes.
 - **Service Discovery**: Added IntelliJ IDEA cluster simulation tip.
 - **Order Service**: Added JSON response example for order creation.
 - **General**:

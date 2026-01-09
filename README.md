@@ -941,6 +941,59 @@ Notes:
 - Don’t hardcode real credentials in code or README; load them from config or a secret manager.
 - With a fixed `url`, Feign is not doing service-discovery-based load balancing; any load balancing (if needed) is handled by DNS or a server-side load balancer in front of the third-party service.
 
+#### 6. Timeout Control
+
+By default, Feign sets conservative timeouts. In production, you must tune these to avoid cascading failures.
+
+**Default Values (Spring Cloud OpenFeign):**
+- **Connect Timeout**: 10s (Time to establish TCP connection)
+- **Read Timeout**: 60s (Time to wait for response after connection)
+
+**Configuration (`application.yml`):**
+You can configure timeouts globally (`default`) or per-client (e.g., `service-product`).
+
+```yaml
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default: # Global settings
+            connectTimeout: 5000 # 5s
+            readTimeout: 5000    # 5s
+          
+          service-product: # Specific override
+            connectTimeout: 1000 # 1s (Fast internal call)
+            readTimeout: 2000    # 2s
+```
+
+**Timeout Flow:**
+
+```mermaid
+graph LR
+    subgraph Client ["Client (Order Service)"]
+        Req[Request]
+        Conn{"1. Connect<br>(connectTimeout)"}
+        Read{"2. Read<br>(readTimeout)"}
+    end
+    
+    subgraph Server ["Server (Product Service)"]
+        Process[Process Logic]
+    end
+    
+    Req --> Conn
+    Conn -- "Success (<1s)" --> Read
+    Conn -- "Fail (>1s)" --> Timeout[SocketTimeoutException]
+    
+    Read --> Process
+    Process --> Read
+    Read -- "Success (<2s)" --> Done[Return Data]
+    Read -- "Fail (>2s)" --> Timeout
+    
+    style Timeout fill:#ffcccc,stroke:#ff0000
+    style Done fill:#ccffcc,stroke:#00ff00
+```
+
 ## Modules
 
 ### Root Configuration

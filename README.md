@@ -1064,6 +1064,41 @@ graph LR
     style Controller fill:#6c5ce7,stroke:#333,color:white
 ```
 
+#### 9. Fallback (Preview)
+
+**What & Why**:
+When a remote service fails (timeout, error, or downtime), a **Fallback** provides a default value or alternative logic, preventing the failure from cascading to the user.
+
+**Implementation**:
+1.  Create a class implementing the Feign interface (`ProductFeignClient`).
+2.  Annotate it with `@Component`.
+3.  Link it in `@FeignClient`.
+
+```java
+// 1. Define Fallback
+@Component
+public class ProductFeignClientFallback implements ProductFeignClient {
+    @Override
+    public Product getProductById(Long id) {
+        // Return dummy data or safe default
+        return new Product(-1L, "Default Product (Service Down)", BigDecimal.ZERO, 0);
+    }
+}
+
+// 2. Link in Client
+@FeignClient(name = "service-product", fallback = ProductFeignClientFallback.class)
+public interface ProductFeignClient { ... }
+```
+
+**⚠️ Important Note: Sentinel Integration**
+Just defining a `fallback` class **won't work automatically** for circuit breaking in Spring Cloud Alibaba unless a circuit breaker implementation is present and enabled.
+
+In this stack, **Sentinel** is the standard solution.
+*   **Without Sentinel**: Fallback might only trigger on specific exceptions (like IO errors) but won't provide true circuit breaking (stop calling after N failures).
+*   **With Sentinel**: We get full flow control, degradation, and circuit breaking capabilities.
+
+*We will explore Sentinel in the next chapter to fully activate this feature.*
+
 ## Modules
 
 ### Root Configuration

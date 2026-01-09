@@ -1215,6 +1215,35 @@ Spam the request (more than 1 per second).
 You will see the default blocking message:
 > BlockedbySentinel(flowlimiting)
 
+### Exception Handling
+
+Sentinel provides multiple ways to handle `BlockException` depending on the entry point (Web, Feign, or `@SentinelResource`).
+
+**Path 1: Web Interface (Global Handler)**
+
+For web requests (URLs), Sentinel uses `SentinelWebInterceptor`. By default, it returns a generic error page/text.
+We can customize this by implementing `BlockExceptionHandler`.
+
+**Flow**:
+`Web Request` -> `SentinelWebInterceptor` -> `DefaultBlockExceptionHandler` -> `Custom BEH`
+
+**Implementation (`RainyBlockExceptionHandler.java`)**:
+This bean overrides the default handler and returns a unified JSON response (`R.error`).
+
+```java
+@Component
+public class RainyBlockExceptionHandler implements BlockExceptionHandler {
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response, 
+                       String resourceName, BlockException e) throws Exception {
+        // Return JSON
+        response.setContentType("application/json;charset=utf-8");
+        R error = R.error(500, resourceName + " is limited by Sentinel: " + e.getClass().getSimpleName());
+        response.getWriter().write(new ObjectMapper().writeValueAsString(error));
+    }
+}
+```
+
 ## Modules
 
 ### Root Configuration

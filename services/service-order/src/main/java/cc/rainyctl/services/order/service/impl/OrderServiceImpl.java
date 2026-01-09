@@ -6,6 +6,7 @@ import cc.rainyctl.common.entity.Product;
 import cc.rainyctl.services.order.mapper.OrderItemMapper;
 import cc.rainyctl.services.order.mapper.OrderMapper;
 import cc.rainyctl.services.order.service.OrderService;
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
@@ -32,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final LoadBalancerClient loadBalancerClient;
 
+    @SentinelResource(value = "createOrder")
     @Override
     public Order createOrder(Long productId, Long userId, int count) {
         // 1. RPC call to get product info

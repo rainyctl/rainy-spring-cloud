@@ -1113,17 +1113,17 @@ Sentinel operates in a Client-Server model:
 ```mermaid
 graph LR
     subgraph ControlPlane ["Control Plane"]
-        Ops[User / Ops]
-        Dashboard[Sentinel Dashboard]
+        Ops["User / Ops"]
+        Dashboard["Sentinel Dashboard"]
     end
     
     subgraph DataPlane ["Data Plane (Microservices)"]
-        App1[Order Service<br>(Sentinel Client)]
-        App2[Product Service<br>(Sentinel Client)]
+        App1["Order Service<br>(Sentinel Client)"]
+        App2["Product Service<br>(Sentinel Client)"]
     end
     
     subgraph Persistence ["Persistence (Optional but Recommended)"]
-        Nacos[(Nacos Config)]
+        Nacos[("Nacos Config")]
     end
     
     Ops -->|"1. Define Rules"| Dashboard

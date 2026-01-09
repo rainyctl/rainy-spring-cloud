@@ -1290,6 +1290,20 @@ public interface ProductClient { ... }
 public interface ProductClient { ... }
 ```
 
+**Path 4: Manual Definition (`SphU`)**
+
+For granular control, you can wrap code manually using the Sentinel API. You must handle `BlockException` yourself.
+
+```java
+try (Entry entry = SphU.entry("resourceName")) {
+    // Protected business logic
+} catch (BlockException e) {
+    // Handle rejected request (Fallback)
+}
+```
+
+> **Note**: For more advanced integration (Gateway, Dubbo, etc.), refer to the [Sentinel Official Documentation](https://github.com/alibaba/Sentinel/wiki).
+
 ## Modules
 
 ### Root Configuration

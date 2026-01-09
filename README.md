@@ -1173,6 +1173,48 @@ graph TD
     style ExecFallback fill:#00b894,color:white
 ```
 
+### Dashboard Setup
+
+1.  **Download**: Get `sentinel-dashboard-1.8.9.jar` (or latest) from [GitHub Releases](https://github.com/alibaba/Sentinel/releases).
+2.  **Run**:
+    ```bash
+    java -Dserver.port=8859 -jar sentinel-dashboard-1.8.9.jar
+    ```
+3.  **Access**: `http://localhost:8859` (User/Pass: `sentinel` / `sentinel`).
+
+### Quick Start: Flow Control Test
+
+We have protected the Order creation logic with `@SentinelResource`.
+
+**1. Code Setup (`OrderServiceImpl.java`)**:
+```java
+@SentinelResource(value = "createOrder") // Define resource name
+@Override
+public Order createOrder(...) {
+    // ...
+}
+```
+
+**2. Register Resource**:
+Sentinel is lazy-loaded. You must trigger the endpoint once to see it in the dashboard.
+```bash
+curl -X POST "http://localhost:8001/order/create?userId=1&productId=1&count=1"
+```
+
+**3. Configure Rule**:
+1.  Go to Dashboard -> **service-order** -> **Flow Control**.
+2.  Click **+ Add Flow Rule**.
+3.  **Resource Name**: `createOrder`.
+4.  **QPS Threshold**: `1`.
+5.  Click **Add**.
+
+**4. Verify Blocking**:
+Spam the request (more than 1 per second).
+
+**Result**:
+You will see the default blocking message:
+> BlockedbySentinel(flowlimiting)
+
 ## Modules
 
 ### Root Configuration

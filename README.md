@@ -994,6 +994,31 @@ graph LR
     style Done fill:#ccffcc,stroke:#00ff00
 ```
 
+#### 7. Retry Mechanism
+
+**Default Behavior**:
+By default, OpenFeign uses `Retryer.NEVER_RETRY`. This means if a call fails (e.g., timeout or network error), it throws an exception immediately without retrying.
+
+**How to Enable (Not Recommended for all cases)**:
+You can enable it by defining a `Retryer` bean.
+
+```java
+@Bean
+public Retryer feignRetryer() {
+    // period=100ms, maxPeriod=1s, maxAttempts=3
+    return new Retryer.Default(100, 1000, 3);
+}
+```
+
+**Common Practice: Should we use it?**
+
+*   **Idempotency Matters**:
+    *   ✅ **Safe to Retry**: Idempotent operations like `GET` (reading data) or `PUT` (updating entire resource).
+    *   ❌ **Dangerous**: Non-idempotent operations like `POST` (creating orders). Retrying a timed-out `POST` request might result in duplicate orders if the server actually processed the first request but the response was lost.
+*   **Recommendation**:
+    *   Keep Feign's default `NEVER_RETRY`.
+    *   Use **Resilience4j** (Circuit Breaker) for more granular control. It handles retries, fallbacks, and circuit breaking more robustly than Feign's simple retryer.
+
 ## Modules
 
 ### Root Configuration

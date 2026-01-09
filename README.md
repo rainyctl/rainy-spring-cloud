@@ -1215,6 +1215,60 @@ Spam the request (more than 1 per second).
 You will see the default blocking message:
 > BlockedbySentinel(flowlimiting)
 
+### Flow Control Rules (FlowRule)
+
+Flow Control protects your system by rejecting excess traffic based on QPS or Thread Count.
+
+#### 1. Direct Mode (Default)
+**Concept**: Count requests for the resource itself. If QPS > Threshold, block.
+
+```mermaid
+graph LR
+    Req[Request] --> Check{QPS > Limit?}
+    Check -- Yes --> Block[Block]
+    Check -- No --> Pass[Pass]
+```
+
+#### 2. Related Mode (Association)
+**Concept**: "If A is stressed, block B."
+**Use Case**: Protect critical resources. If "Write DB" (Resource A) is heavy, limit "Read DB" (Resource B) to free up resources.
+
+```mermaid
+graph LR
+    subgraph "Critical Resource (A)"
+        Write[Write DB]
+    end
+    
+    subgraph "Non-Critical Resource (B)"
+        Read[Read DB]
+    end
+    
+    Write -.->|High Load| Monitor[Sentinel Monitor]
+    Monitor -->|Trigger Limit| Read
+    
+    User --> Read
+    Read --> Check{A is Busy?}
+    Check -- Yes --> Block[Block B]
+```
+
+#### 3. Link Mode (Chain)
+**Concept**: "Block B only if coming from A."
+**Use Case**: Fine-grained control. Limit `service-order` calls from `web-ui` (Entrance A), but allow calls from `admin-panel` (Entrance B).
+
+```mermaid
+graph TD
+    User1[Web UI] -->|Entrance A| API[API Gateway]
+    User2[Admin Panel] -->|Entrance B| API
+    
+    API --> Service[Target Service]
+    
+    subgraph Sentinel Logic
+        Service --> Check{Source == A?}
+        Check -- Yes --> Limit[Check Threshold]
+        Check -- No --> Pass[Pass]
+    end
+```
+
 ### Exception Handling
 
 Sentinel provides multiple ways to handle `BlockException` depending on the entry point (Web, Feign, or `@SentinelResource`).

@@ -1251,8 +1251,8 @@ For methods annotated with `@SentinelResource` (e.g., Service layer), the flow d
 **Flow**:
 1.  **BlockHandler (Priority 1)**: If `blockHandler` is defined, Sentinel calls this method.
 2.  **Exception Bubble (Priority 2)**: If no `blockHandler` is defined, `BlockException` is thrown.
-    *   **Caught**: Can be handled by a global `@RestControllerAdvice`.
-    *   **Uncaught**: Bubbles up to Spring Web, resulting in **HTTP 500**.
+    *   **Caught**: Can be caught by Spring Boot's **Global Exception Handler** (`@RestControllerAdvice`).
+    *   **Uncaught**: Bubbles up to Spring Web, resulting in a default **HTTP 500** error page/JSON.
 
 **Implementation Example**:
 ```java
@@ -1268,6 +1268,26 @@ public Order handleBlock(..., BlockException e) {
 // Option B: Let it throw (Global Handler needed)
 @SentinelResource(value = "createOrder")
 public Order createOrder(...) { ... }
+```
+
+**Path 3: OpenFeign Integration**
+
+When Sentinel is enabled for Feign (`feign.sentinel.enabled=true`), resources are automatically defined.
+
+**Flow**:
+1.  **Fallback (Priority 1)**: If `fallback` or `fallbackFactory` is configured in `@FeignClient`, Sentinel executes it.
+2.  **Exception Bubble (Priority 2)**: If no fallback is configured, the exception propagates to the caller.
+    *   It can then be caught by the **Global Exception Handler**.
+
+**Implementation Example**:
+```java
+// 1. With Fallback (Safe)
+@FeignClient(name = "service-product", fallback = ProductFallback.class)
+public interface ProductClient { ... }
+
+// 2. Without Fallback (Bubbles up)
+@FeignClient(name = "service-product")
+public interface ProductClient { ... }
 ```
 
 ## Modules

@@ -1019,6 +1019,51 @@ public Retryer feignRetryer() {
     *   Keep Feign's default `NEVER_RETRY`.
     *   Use **Resilience4j** (Circuit Breaker) for more granular control. It handles retries, fallbacks, and circuit breaking more robustly than Feign's simple retryer.
 
+#### 8. Request Interceptor
+
+**What & Why**:
+Interceptors allow you to modify the request template **before** the request is sent. This is crucial for cross-cutting concerns like:
+- **Authentication**: Adding `Authorization` headers (e.g., JWT tokens) to every outgoing call.
+- **Logging**: Adding correlation IDs.
+- **Customization**: Modifying URL parameters dynamically.
+
+**Implementation Example**:
+Create a bean that implements `RequestInterceptor`.
+
+```java
+@Bean
+public RequestInterceptor requestInterceptor() {
+    return template -> {
+        // Add a custom header to every request
+        template.header("X-Token", "SECRET-123");
+        
+        // Log the request
+        System.out.println("Intercepted Feign Request: " + template.url());
+    };
+}
+```
+
+**Interception Flow**:
+
+```mermaid
+graph LR
+    subgraph "Order Service"
+        Feign[OpenFeign Client]
+        Interceptor[Request Interceptor]
+    end
+    
+    subgraph "Product Service"
+        Controller[Product Controller]
+    end
+    
+    Feign -->|"1. Build Request"| Interceptor
+    Interceptor -->|"2. Add Header (X-Token)"| Controller
+    Controller -.->|"3. Return Response"| Interceptor
+    
+    style Interceptor fill:#00b894,stroke:#333,color:white
+    style Controller fill:#6c5ce7,stroke:#333,color:white
+```
+
 ## Modules
 
 ### Root Configuration

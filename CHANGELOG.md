@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
     - Added third-party API call example (Weather API).
     - **Timeout Control**: Added section on `connectTimeout` and `readTimeout` configuration with Mermaid flow diagram.
     - **Retry Mechanism**: Added section on default behavior (`NEVER_RETRY`) and best practices (Idempotency risks).
+    - **Request Interceptor**: Added section on modifying requests (e.g., adding headers) with Mermaid diagram.
 - **Distributed Configuration**: Added comprehensive guide covering:
     - Basic setup with `spring-cloud-starter-alibaba-nacos-config`.
     - Dynamic refresh using `@RefreshScope` and recommended `@ConfigurationProperties` approach.

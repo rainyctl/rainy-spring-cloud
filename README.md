@@ -1244,6 +1244,32 @@ public class RainyBlockExceptionHandler implements BlockExceptionHandler {
 }
 ```
 
+**Path 2: Protected Resource (`@SentinelResource`)**
+
+For methods annotated with `@SentinelResource` (e.g., Service layer), the flow depends on the annotation configuration.
+
+**Flow**:
+1.  **BlockHandler (Priority 1)**: If `blockHandler` is defined, Sentinel calls this method.
+2.  **Exception Bubble (Priority 2)**: If no `blockHandler` is defined, `BlockException` is thrown.
+    *   **Caught**: Can be handled by a global `@RestControllerAdvice`.
+    *   **Uncaught**: Bubbles up to Spring Web, resulting in **HTTP 500**.
+
+**Implementation Example**:
+```java
+// Option A: Handle with Callback (Recommended)
+@SentinelResource(value = "createOrder", blockHandler = "handleBlock")
+public Order createOrder(...) { ... }
+
+// Must match signature + BlockException
+public Order handleBlock(..., BlockException e) {
+    return new Order(); // Return fallback data
+}
+
+// Option B: Let it throw (Global Handler needed)
+@SentinelResource(value = "createOrder")
+public Order createOrder(...) { ... }
+```
+
 ## Modules
 
 ### Root Configuration

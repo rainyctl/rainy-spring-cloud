@@ -7,6 +7,7 @@ import cc.rainyctl.services.order.mapper.OrderItemMapper;
 import cc.rainyctl.services.order.mapper.OrderMapper;
 import cc.rainyctl.services.order.service.OrderService;
 import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
@@ -33,7 +34,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final LoadBalancerClient loadBalancerClient;
 
-    @SentinelResource(value = "createOrder")
+    @SentinelResource(value = "createOrder", blockHandler = "createOrderFallback")
     @Override
     public Order createOrder(Long productId, Long userId, int count) {
         // 1. RPC call to get product info
@@ -67,6 +68,13 @@ public class OrderServiceImpl implements OrderService {
 
         return order;
     }
+
+   private Order createOrderFallback(Long productId, Long userId, int count, BlockException e) {
+        Order order = new Order();
+        order.setNickName("sad DIO");
+        order.setAddress("JOJO not found: " + e.getClass());
+        return order;
+   }
 
     // RPC with no load balancing
     private Product getProductFromRemote(Long productId) {

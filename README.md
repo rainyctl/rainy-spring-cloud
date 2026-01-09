@@ -1099,6 +1099,80 @@ In this stack, **Sentinel** is the standard solution.
 
 *We will explore Sentinel in the next chapter to fully activate this feature.*
 
+## 7. Sentinel (Flow Control & Reliability)
+
+### What & Why
+Sentinel is a powerful "traffic guard" for microservices. As services communicate, stability becomes critical. Sentinel protects your system from cascading failures using **Flow Control**, **Circuit Breaking**, **System Adaptive Protection**, and **Hotspot Traffic Control**.
+
+### Architecture
+Sentinel operates in a Client-Server model:
+*   **Sentinel Client (Your App)**: Integrated into microservices (Web, Dubbo, OpenFeign). It reports metrics to the dashboard and pulls rules.
+*   **Sentinel Dashboard**: A web console to view real-time metrics and configure rules dynamically.
+*   **Rules Storage**: Rules are pushed to clients. For production, they should be persisted in Nacos/Zookeeper (Push Mode).
+
+```mermaid
+graph LR
+    subgraph "Control Plane"
+        Ops[User / Ops]
+        Dashboard[Sentinel Dashboard]
+    end
+    
+    subgraph "Data Plane (Microservices)"
+        App1[Order Service<br>(Sentinel Client)]
+        App2[Product Service<br>(Sentinel Client)]
+    end
+    
+    subgraph "Persistence (Optional but Recommended)"
+        Nacos[(Nacos Config)]
+    end
+    
+    Ops -->|"1. Define Rules"| Dashboard
+    Dashboard -->|"2. Push Rules"| Nacos
+    Nacos -.->|"3. Pull/Push Rules"| App1
+    Nacos -.->|"3. Pull/Push Rules"| App2
+    App1 -->|"4. Send Metrics"| Dashboard
+    App2 -->|"4. Send Metrics"| Dashboard
+    
+    style Dashboard fill:#ff7675,color:white
+    style Nacos fill:#0984e3,color:white
+```
+
+### Core Concepts: Resources & Rules
+
+1.  **Resources**: Anything you want to protect.
+    *   **Auto-Adapted**: Web APIs (`/order/create`), Dubbo methods, Feign clients.
+    *   **Manual**: Code blocks wrapped in `@SentinelResource`.
+2.  **Rules**: Policies applied to resources.
+    *   **Flow Control (`FlowRule`)**: Limit QPS (e.g., max 10 req/s).
+    *   **Degrade (`DegradeRule`)**: Circuit breaking (stop calling if error rate > 50% or RT > 500ms).
+    *   **System Protection (`SystemRule`)**: Protect based on CPU/Load.
+    *   **Hotspot (`ParamFlowRule`)**: Limit specific parameters (e.g., limit `productId=123`).
+
+### Workflow
+
+Every request goes through a chain of slots (processors).
+
+```mermaid
+graph TD
+    User((Request)) --> Resource[Resource Entry]
+    Resource --> Check{Sentinel Check}
+    
+    Check -->|Pass| Rules{Check Rules}
+    
+    Rules -- "Violated<br>(Flow/Degrade)" --> Block[BlockException]
+    Rules -- "Passed" --> Business[Execute Business Logic]
+    
+    Block --> Fallback{Has Fallback?}
+    Fallback -- Yes --> ExecFallback[Execute Fallback Logic]
+    Fallback -- No --> Throw[Throw Exception]
+    
+    Business -- "Success" --> Done((End))
+    Business -- "Exception" --> Fallback
+    
+    style Block fill:#d63031,color:white
+    style ExecFallback fill:#00b894,color:white
+```
+
 ## Modules
 
 ### Root Configuration

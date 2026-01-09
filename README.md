@@ -1112,17 +1112,17 @@ Sentinel operates in a Client-Server model:
 
 ```mermaid
 graph LR
-    subgraph "Control Plane"
+    subgraph ControlPlane ["Control Plane"]
         Ops[User / Ops]
         Dashboard[Sentinel Dashboard]
     end
     
-    subgraph "Data Plane (Microservices)"
+    subgraph DataPlane ["Data Plane (Microservices)"]
         App1[Order Service<br>(Sentinel Client)]
         App2[Product Service<br>(Sentinel Client)]
     end
     
-    subgraph "Persistence (Optional but Recommended)"
+    subgraph Persistence ["Persistence (Optional but Recommended)"]
         Nacos[(Nacos Config)]
     end
     

@@ -54,6 +54,7 @@ All notable changes to this project will be documented in this file.
     - Added "Troubleshooting" section covering MyBatis-Plus dependency issues and Mapper scanning.
 
 ### Fixed
+- Fixed Mermaid graph syntax in Sentinel Architecture section (explicit subgraph IDs).
 - Aligned Nacos Docker command with official docs: added 8080 port and removed hardcoded token, using a generated token instead.
 - Updated Nacos Docker command in `README.md` to fix startup error by providing required `NACOS_AUTH_TOKEN` and identity keys.
 - Updated Nacos Docker command in `README.md` to fix authentication error by setting `NACOS_AUTH_ENABLE=false`.

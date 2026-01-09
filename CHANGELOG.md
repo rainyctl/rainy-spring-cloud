@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Documentation
+- **README accuracy**:
+    - Updated project structure to include `rainy-common`.
+    - Pinned Nacos Docker image to `v3.1.1` (avoid `latest` drift).
+    - Corrected Product Service default base URL to `9001`.
+    - Corrected Order create example to use `POST /order/create`.
+    - Clarified OpenFeign status (present but not wired end-to-end).
+    - Aligned local cluster port example (`--server.port=8002`).
+    - Added Quick Start commands and curl smoke checks.
+    - Fixed code snippets to match `OrderMainApplication` and actual dependencies.
+    - Aligned Nacos config notes with `@ConfigurationProperties` usage.
+    - Added OpenFeign third-party API example (fixed base URL).
+    - Added client-side vs server-side load balancing notes.
+- **OpenFeign**: Added dedicated section (Section 6) covering:
+    - Concept and benefits (Declarative vs Imperative).
+    - Setup instructions (Dependency, `@EnableFeignClients`).
+    - Usage example (`@FeignClient` interface).
+    - Integration with Spring Cloud LoadBalancer.
 - **Distributed Configuration**: Added comprehensive guide covering:
     - Basic setup with `spring-cloud-starter-alibaba-nacos-config`.
     - Dynamic refresh using `@RefreshScope` and recommended `@ConfigurationProperties` approach.

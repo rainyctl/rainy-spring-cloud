@@ -41,6 +41,7 @@ This is a multi-module Maven project structured as follows:
 
 ```
 rainy-spring-cloud
+├── rainy-common            # Shared entities (Order/Product/...)
 ├── services               # Container for microservices
 │   ├── service-order      # Order Management Service
 │   └── service-product    # Product Management Service
@@ -54,6 +55,26 @@ rainy-spring-cloud
 - **Spring Cloud**: 2025.0.1
 - **Spring Cloud Alibaba**: 2025.0.0.0
 - **Service Discovery**: Nacos
+
+## Quick Start (Local)
+
+Prereqs: Nacos at `127.0.0.1:8848` and MySQL schemas `rainy_product` / `rainy_order` (see “Database Setup”).
+
+```bash
+# Start service-product (default: 9001)
+./mvnw -pl services/service-product spring-boot:run
+
+# Start service-order (default: 8001)
+./mvnw -pl services/service-order spring-boot:run
+```
+
+```bash
+# Smoke checks
+curl http://localhost:9001/hello
+curl http://localhost:9001/product/1
+curl -X POST "http://localhost:8001/order/create?userId=1&productId=1&count=1"
+curl http://localhost:8001/config
+```
 
 ## 1. Service Registry (Nacos)
 
@@ -93,7 +114,7 @@ docker run --name nacos-standalone-derby \
   -p 8080:8080 \
   -p 8848:8848 \
   -p 9848:9848 \
-  -d nacos/nacos-server:latest
+  -d nacos/nacos-server:v3.1.1
 ```
 
 - Binary:
@@ -105,7 +126,7 @@ sh bin/shutdown.sh
 ```
 
 - Console: http://localhost:8080
-- Tested on Nacos v3.1.1 (current latest)
+- Tested on Nacos v3.1.1
 - First login credentials: username nacos, password nacos
 
 ### Wire Services to Nacos (Client)
@@ -126,16 +147,16 @@ spring.cloud.nacos.discovery.password=nacos
 ```java
 @SpringBootApplication
 @EnableDiscoveryClient
-public class OrderApplication {
+public class OrderMainApplication {
   public static void main(String[] args) {
-    SpringApplication.run(OrderApplication.class, args);
+    SpringApplication.run(OrderMainApplication.class, args);
   }
 }
 ```
 
 Notes:
 - Ports: 8080 (console UI), 8848 (HTTP API), 9848 (gRPC channels in Nacos 2.x/3.x)
-- Current modules are POM-only; add Spring Boot apps and configs to see registrations in the console
+- Both services are runnable Spring Boot apps; start them to see registrations in the console
 
 ### Verification
 If configured correctly, you should see logs similar to this upon startup:
@@ -179,7 +200,7 @@ You can easily simulate a cluster (multiple instances of the same service) local
 1.  Open **Run/Debug Configurations**.
 2.  Select a service (e.g., `OrderMainApplication`).
 3.  Click **Copy Configuration** (or press `Ctrl+D` / `Cmd+D`).
-4.  In the new configuration, add to **Program arguments**: `--server.port=8082` (or any other free port).
+4.  In the new configuration, add to **Program arguments**: `--server.port=8002` (or any other free port).
 5.  Run both the original and the copy.
 6.  Check the Nacos Console: you will see `service-order` with **2 instances**.
 
@@ -220,7 +241,7 @@ We implemented a **manual Remote Procedure Call (RPC)** to connect the services.
 **The Goal**: `Order Service` needs to talk to `Product Service` to get product details (price, name).
 
 **The "Simple" Approach (Current Implementation)**:
-Instead of using advanced tools like OpenFeign (yet), we did it manually to understand the core concept:
+Instead of using OpenFeign (not wired yet), we did it manually to understand the core concept:
 1.  **Discovery**: We used `DiscoveryClient` to ask Nacos: *"Who handles 'service-product'?"*
 2.  **Selection**: We blindly picked the **first available instance** (`instances.get(0)`).
 3.  **Call**: We constructed a URL (`http://ip:port/product/{id}`) and fired a GET request using `RestTemplate`.
@@ -298,7 +319,7 @@ INSERT INTO t_product (name, price, stock) VALUES
 ```
 
 ### Understanding Order Creation Logic
-When a user places an order (e.g., `GET /order/create?userId=1&productId=2`), the following happens behind the scenes.
+When a user places an order (e.g., `POST /order/create?userId=1&productId=2`), the following happens behind the scenes.
 **Note**: We use `MyBatis-Plus` to simplify database interactions.
 
 #### 1. The Logic Flow
@@ -392,7 +413,7 @@ public interface OrderItemMapper extends BaseMapper<OrderItem> {
 ```
 
 #### 4. Response Example
-After a successful call to `/order/create?userId=1&productId=2&count=3`, you will receive a JSON response similar to this:
+After a successful `POST /order/create?userId=1&productId=2&count=3`, you will receive a JSON response similar to this:
 
 ```json
 { 
@@ -416,7 +437,7 @@ After a successful call to `/order/create?userId=1&productId=2&count=3`, you wil
 ## 4. Load Balancing
 
 ### Why?
-In a real production environment, you will likely have multiple instances of `service-product` running (e.g., on ports 8002, 8003, 8004) to handle high traffic. If `service-order` hardcodes the URL to `http://localhost:8002`, it defeats the purpose of clustering. We need a way to distribute requests across all available instances.
+In a real production environment, you will likely have multiple instances of `service-product` running (e.g., on ports 9001, 9002, 9003) to handle high traffic. If `service-order` hardcodes the URL to `http://localhost:9001`, it defeats the purpose of clustering. We need a way to distribute requests across all available instances.
 
 ### Dependencies
 Since Spring Cloud 2020.0, the old Netflix Ribbon has been removed. We now use **Spring Cloud LoadBalancer**.
@@ -425,7 +446,7 @@ Ensure `service-order/pom.xml` includes:
 ```xml
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+    <artifactId>spring-cloud-loadbalancer</artifactId>
 </dependency>
 ```
 
@@ -466,7 +487,7 @@ public class OrderConfig {
 ```
 
 **2. Use Service Name in URL**
-Now, instead of `localhost:8002`, you use the **Service Name** (`service-product`) registered in Nacos.
+Now, instead of `localhost:9001`, you use the **Service Name** (`service-product`) registered in Nacos.
 
 ```java
 // The URL is now host-agnostic!
@@ -478,7 +499,19 @@ Product product = restTemplate.getForObject(url, Product.class);
 1. Spring sees `http://service-product/...`.
 2. The `LoadBalancerInterceptor` pauses the request.
 3. It asks the Load Balancer: "Give me an instance for 'service-product'".
-4. It rewrites the URL to `http://192.168.1.5:8002/...` and lets the request proceed.
+4. It rewrites the URL to `http://192.168.1.5:9001/...` and lets the request proceed.
+
+### Client-Side vs Server-Side Load Balancing
+
+**Client-side load balancing**
+- The caller resolves service instances and picks one to call.
+- Usually paired with a registry (Nacos) and a client library (Spring Cloud LoadBalancer).
+- In this project: `RestTemplate` + `@LoadBalanced` calling `http://service-product/...`, or Feign with `name = "service-product"` (after enabling Feign).
+
+**Server-side load balancing**
+- The caller sends traffic to a single endpoint (VIP / gateway / DNS name).
+- A load balancer routes to instances behind it (Nginx/HAProxy, cloud LB, Kubernetes Service, API Gateway).
+- Typical for third-party APIs: you call `https://api.vendor.com/...` and the vendor does the balancing.
 
 ### Caching Mechanism (Important)
 The client maintains a **local cache** of the service registry (the "phonebook").
@@ -557,26 +590,22 @@ spring.config.import=nacos:service-order.properties
     ```
     6.  Click **Publish**.
 
-#### 4. Dynamic Refresh (`@RefreshScope`)
-We use `@RefreshScope` on `OrderController` to support hot reloading.
+#### 4. Dynamic Refresh (Recommended: `@ConfigurationProperties`)
+We expose `/config` from `OrderController` and bind Nacos config via `@ConfigurationProperties` (`OrderServiceProperties`). This keeps controllers clean and avoids `@Value` usage.
 
 ```java
 @RestController
-@RefreshScope // <--- Triggers bean reload when config changes
 public class OrderController {
-    
-    @Value("${order.timeout}")
-    String orderTimeout;
     
     // ...
 }
 ```
 
 #### 5. Alternative (Recommended ★): Configuration Properties
-Instead of using `@Value` and `@RefreshScope` on every controller, you can use a Type-Safe Configuration Properties class.
+Instead of using `@Value` on every controller, you can use a Type-Safe Configuration Properties class.
 
 **Benefit**:
-- **No `@RefreshScope` needed** on the controller or the properties bean itself (Spring Cloud automatically updates `@ConfigurationProperties` beans).
+- No special controller annotations needed; `@ConfigurationProperties` gives a clean, typed view of config.
 - Strong typing and validation.
 
 **1. Define Properties Class**
@@ -621,7 +650,7 @@ graph TD
     subgraph Service ["Order Service"]
         Boot["Startup / Bootstrap"]
         AppEnv["Spring Environment"]
-        Bean["@RefreshScope Bean<br>or<br>@ConfigurationProperties"]
+        Bean["@ConfigurationProperties Bean"]
     end
     
     Boot -->|"1. Fetch Config"| Config
@@ -811,6 +840,107 @@ public ApplicationRunner nacosConfigListener(NacosConfigManager nacosConfigManag
 }
 ```
 
+## 6. OpenFeign (Declarative RPC)
+
+### What & Why
+**Concept**: A declarative web service client. You write an interface and annotate it; Spring Cloud generates the implementation at runtime.
+**Importance**:
+1.  **Cleaner Code**: Eliminates boilerplate `RestTemplate` code.
+2.  **Built-in Load Balancing**: Integrates seamlessly with Spring Cloud LoadBalancer.
+3.  **Type Safety**: Shared interfaces can ensure type safety between client and server.
+
+### Implementation Status
+OpenFeign is present in the project (dependency + `ProductFeignClient`), but the running code path still uses `RestTemplate` + `@LoadBalanced`. To use Feign end-to-end, enable `@EnableFeignClients` in `OrderMainApplication` and switch `OrderServiceImpl` to call `ProductFeignClient`.
+
+### How to Use
+
+#### 1. Add Dependency
+`service-order/pom.xml`:
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+```
+
+#### 2. Enable Feign Clients
+Add `@EnableFeignClients` to your main application class.
+
+`OrderMainApplication.java`:
+```java
+@EnableFeignClients
+@EnableDiscoveryClient
+@SpringBootApplication
+public class OrderMainApplication { ... }
+```
+
+#### 3. Define Client Interface
+Create an interface that mirrors the Controller of the service you want to call.
+
+`ProductFeignClient.java`:
+```java
+@FeignClient(name = "service-product") // <--- Service Name in Nacos
+public interface ProductFeignClient {
+    
+    @GetMapping("/product/{id}") // <--- Endpoint signature
+    Product getProductById(@PathVariable("id") Long productId);
+}
+```
+
+#### 4. Inject and Use
+`OrderServiceImpl.java`:
+```java
+@RequiredArgsConstructor
+@Service
+public class OrderServiceImpl implements OrderService {
+
+    private final ProductFeignClient productFeignClient;
+
+    @Override
+    public Order createOrder(...) {
+        // RPC call (Load Balancing is automatic!)
+        Product product = productFeignClient.getProductById(productId);
+        // ...
+    }
+}
+```
+
+#### 5. Call Third-Party APIs (Fixed Base URL)
+When calling a third-party API (not registered in Nacos), you typically use a fixed base URL.
+
+**1. Configure base URL**
+`service-order/src/main/resources/application.properties`:
+```properties
+thirdparty.weather.base-url=https://example.com
+```
+
+**2. Define Feign client**
+```java
+@FeignClient(name = "thirdparty-weather", url = "${thirdparty.weather.base-url}")
+public interface WeatherFeignClient {
+
+    @PostMapping("/whapi/json/alicityweather/condition")
+    String getWeather(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam("token") String token,
+            @RequestParam("cityId") String cityId
+    );
+}
+```
+
+**3. Call it**
+```java
+String json = weatherFeignClient.getWeather(
+        "Bearer <access-token>",
+        "<api-token>",
+        "101010100"
+);
+```
+
+Notes:
+- Don’t hardcode real credentials in code or README; load them from config or a secret manager.
+- With a fixed `url`, Feign is not doing service-discovery-based load balancing; any load balancing (if needed) is handled by DNS or a server-side load balancer in front of the third-party service.
+
 ## Modules
 
 ### Root Configuration
@@ -829,7 +959,7 @@ The `services` module serves as a grouping for the microservices in the system.
 ## API Reference
 
 ### Product Service (`service-product`)
-Base URL: `http://localhost:8002` (or whatever port you configured)
+Base URL: `http://localhost:9001` (or whatever port you configured)
 
 | Method | Endpoint | Description | Parameters |
 | :--- | :--- | :--- | :--- |

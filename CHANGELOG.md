@@ -52,7 +52,14 @@ All notable changes to this project will be documented in this file.
 - **Order Service**: Added JSON response example for order creation.
 - **Gateway**: Added Section 8 covering:
     - Key features (Unified Entry, Routing, Load Balancing, etc.).
-    - Architecture diagram visualizing the Gateway's role in the cluster.
+    - Architecture diagram visualizing the Gateway's role in the cluster (Port 7777).
+    - **Technology Choice**: Documented the use of `spring-cloud-starter-gateway-server-webflux` (Reactive) over MVC for efficiency.
+    - Added deprecation note for the old `spring-cloud-starter-gateway` artifact.
+    - **Breaking Change**: Updated Gateway route configuration to use `spring.cloud.gateway.server.webflux.routes` as per latest Spring Cloud standards.
+    - **Dependency Clarification**: Documented the requirement for `spring-cloud-starter-loadbalancer` (over the bare library) to enable `lb://` routing support.
+- **API Reference**:
+    - Updated Product Service endpoints to `/api/product/hello` and `/api/product/{id}`.
+    - Updated Order Service endpoints to `/api/order/create` and added `/api/order/config`.
 - **General**:
     - Added "Coffee: 8" shield to `README.md`.
     - Added visual stars (★) to recommended approaches.

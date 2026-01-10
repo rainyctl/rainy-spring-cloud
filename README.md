@@ -41,6 +41,7 @@ This is a multi-module Maven project structured as follows:
 
 ```
 rainy-spring-cloud
+├── gateway                 # API Gateway (Port: 7777)
 ├── rainy-common            # Shared entities (Order/Product/...)
 ├── services               # Container for microservices
 │   ├── service-order      # Order Management Service
@@ -1235,7 +1236,7 @@ The API Gateway acts as the single entry point for all clients. Instead of calli
 ```mermaid
 graph LR
     Frontend[Frontend]
-    Gateway[Gateway]
+    Gateway[("Gateway Service<br>(Port: 7777)")]
     Registry[("Service Registry/Discovery")]
     
     subgraph Cluster ["Business Cluster"]
@@ -1257,6 +1258,37 @@ graph LR
     Payment -->|"Service Registration"| Registry
     Logistics -->|"Service Registration"| Registry
 ```
+
+### Technology Choice: Reactive vs MVC
+
+We chose **Spring Cloud Gateway (Reactive)** over the MVC variant for its superior efficiency in handling high concurrency.
+
+*   **Reactive (WebFlux)**: Built on Project Reactor and Netty. Uses a non-blocking, event-loop model. Ideal for IO-intensive tasks like routing, allowing it to handle more concurrent requests with fewer threads.
+*   **MVC (Servlet)**: Built on the traditional Servlet API. Uses a blocking, thread-per-request model.
+
+**Important Note on Dependencies**:
+As of recent Spring Cloud versions, the artifact names have become more explicit.
+> `spring-cloud-starter-gateway` is deprecated. Please use `spring-cloud-starter-gateway-server-webflux` instead.
+
+We explicitly use the WebFlux starter in `gateway/pom.xml`:
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-gateway-server-webflux</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+</dependency>
+```
+
+**Load Balancer Dependency**:
+We use `spring-cloud-starter-loadbalancer` instead of the bare `spring-cloud-loadbalancer`. The starter ensures all necessary auto-configurations are present, which is required for resolving `lb://` URIs in Gateway routes.
+
+**Configuration Update**:
+With the new `gateway-server-webflux` starter, the route configuration property has moved.
+*   **Old**: `spring.cloud.gateway.routes`
+*   **New**: `spring.cloud.gateway.server.webflux.routes`
 
 ## Modules
 
@@ -1280,15 +1312,16 @@ Base URL: `http://localhost:9001` (or whatever port you configured)
 
 | Method | Endpoint | Description | Parameters |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/hello` | Health check / Simple greeting | None |
-| `GET` | `/product/{id}` | Get product details by ID | `id` (Path Variable): Product ID |
+| `GET` | `/api/product/hello` | Health check / Simple greeting | None |
+| `GET` | `/api/product/{id}` | Get product details by ID | `id` (Path Variable): Product ID |
 
 ### Order Service (`service-order`)
 Base URL: `http://localhost:8001` (or whatever port you configured)
 
 | Method | Endpoint | Description | Parameters |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/order/create` | Create a new order | `userId` (Query): User ID<br>`productId` (Query): Product ID<br>`count` (Query, default=1): Quantity |
+| `POST` | `/api/order/create` | Create a new order | `userId` (Query): User ID<br>`productId` (Query): Product ID<br>`count` (Query, default=1): Quantity |
+| `GET` | `/api/order/config` | Get configuration from Nacos | None |
 
 ## Troubleshooting
 

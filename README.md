@@ -1389,6 +1389,16 @@ For methods annotated with `@SentinelResource` (e.g., Service layer), the flow d
     *   **Caught**: Can be caught by Spring Boot's **Global Exception Handler** (`@RestControllerAdvice`).
     *   **Uncaught**: Bubbles up to Spring Web, resulting in a default **HTTP 500** error page/JSON.
 
+**Comparison: `blockHandler` vs `fallback`**
+
+| Feature | `blockHandler` | `fallback` |
+| :--- | :--- | :--- |
+| **Trigger** | Sentinel Rule Violation (`BlockException`) | Business Exception (Runtime) & `BlockException` |
+| **Signature** | Same args + `BlockException` | Same args + `Throwable` (optional) |
+| **Use Case** | Handle traffic limiting / circuit breaking | Handle business errors / service degradation |
+
+> **Key Difference**: `fallback` can handle *any* Java exception (e.g., `NullPointerException`, `RuntimeException`), whereas `blockHandler` *only* catches Sentinel's `BlockException`. If you use `fallback` to handle blocking, the last argument should be `Throwable` instead of `BlockException`.
+
 **Implementation Example**:
 ```java
 // Option A: Handle with Callback (Recommended)

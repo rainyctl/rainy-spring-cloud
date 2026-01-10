@@ -1290,6 +1290,21 @@ With the new `gateway-server-webflux` starter, the route configuration property 
 *   **Old**: `spring.cloud.gateway.routes`
 *   **New**: `spring.cloud.gateway.server.webflux.routes`
 
+### Core Concepts: Predicates & Filters
+
+The Gateway works on a simple yet powerful flow: **Match (Predicate) -> Process (Filter) -> Route**.
+
+*   **Route Predicate**: The logic that decides *if* a request matches a route.
+    *   *Examples*: Path (`/api/**`), Method (`GET`), Header, Host, etc.
+*   **Gateway Filter**: Logic applied to specific routes to modify the request or response.
+    *   *Examples*: `AddRequestHeader`, `StripPrefix`, `Retry`.
+    *   *Flow*: Filters act in a chain. **Pre-filters** run before sending the request to the downstream service. **Post-filters** run after receiving the response.
+*   **Global Filter**: Logic applied to **all** routes.
+    *   *Use Cases*: Logging, Metrics, Authentication.
+*   **Customization**: You can write your own `GlobalFilter` or `GatewayFilterFactory` for custom business logic.
+
+For a complete list of built-in predicates and filters, refer to the [Official Spring Cloud Gateway Documentation](https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/).
+
 ## Modules
 
 ### Root Configuration

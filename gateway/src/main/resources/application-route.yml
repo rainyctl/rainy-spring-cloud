@@ -12,3 +12,15 @@ spring:
               uri: lb://service-product
               predicates:
                 - Path=/api/product/**
+            - id: jojo-vip
+              uri: https://cn.bing.com
+              predicates:
+                - name: Path
+                  args:
+                    pattern: /search
+                # - Vip=user,DIO # matches /search?q=DIO
+                # will search on Bing https://cn.bing.com/search?q=DIO
+                - name: Vip
+                  args:
+                    param: q
+                    value: DIO

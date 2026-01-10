@@ -34,7 +34,7 @@ All notable changes to this project will be documented in this file.
     - **Workflow**: Request processing flow diagram (Check -> Rule -> Block/Fallback).
     - **Dashboard Setup**: Added guide to running Sentinel Dashboard (v1.8.9).
     - **Flow Control Test**: Added step-by-step guide to testing QPS limits with `@SentinelResource`.
-    - **Flow Rules**: Added comprehensive section on Flow Control Modes (Direct, Related, Link) with custom Mermaid diagrams.
+    - **Flow Rules**: Added comprehensive section on Flow Control Modes (Direct, Related, Link) and Traffic Shaping Effects (Quick Fail, Warm Up, Queuing) with custom Mermaid diagrams.
     - **Exception Handling**: Added explanation of `SentinelWebInterceptor` (Path 1), `@SentinelResource` (Path 2), OpenFeign (Path 3), and Manual `SphU` (Path 4) flows.
 - **Distributed Configuration**: Added comprehensive guide covering:
     - Basic setup with `spring-cloud-starter-alibaba-nacos-config`.

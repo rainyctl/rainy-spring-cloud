@@ -1269,6 +1269,47 @@ graph TD
     end
 ```
 
+#### 4. Traffic Shaping Effects
+How Sentinel handles traffic that exceeds the threshold.
+
+**A. Quick Fail (Default)**
+*   **Behavior**: Immediately throws `FlowException`.
+*   **Use Case**: Real-time services requiring fast feedback.
+
+```mermaid
+graph LR
+    Req[Request] --> Check{Exceed QPS?}
+    Check -- Yes --> Reject[Throw Exception]
+    Check -- No --> Pass
+```
+
+**B. Warm Up (Cold Start)**
+*   **Behavior**: Threshold increases linearly from `Threshold / coldFactor` to `Threshold` over `warmUpPeriod`.
+*   **Use Case**: Prevent system crash during cold start (e.g., DB connections not pooled, caches empty).
+*   **Formula**: `Initial Threshold = Max Threshold / 3` (default coldFactor is 3).
+
+```mermaid
+graph LR
+    subgraph "Warm Up Period (e.g. 10s)"
+        Start[QPS: 3] -->|Ramps Up| End[QPS: 10]
+    end
+    Traffic --> Start
+```
+
+**C. Uniform Rate Queuing (Throttling)**
+*   **Behavior**: Enforces a strict interval between requests (Leaky Bucket). Excess requests wait in a queue.
+*   **Use Case**: Peak shaving (e.g., burst traffic from message queues).
+*   **Constraint**: `QPS` must not exceed 1000. `Max Queue Time` determines how long a request waits before timeout.
+
+```mermaid
+graph LR
+    Requests[Burst Traffic] -->|Queue| Bucket{Leaky Bucket}
+    Bucket -->|Fixed Rate (e.g. 1 req/500ms)| Process[System]
+    Bucket -->|Timeout| Drop[Drop Request]
+```
+
+> **Reference**: [Sentinel Flow Control Documentation](https://github.com/alibaba/Sentinel/wiki/Flow-Control-Regulation)
+
 ### Exception Handling
 
 Sentinel provides multiple ways to handle `BlockException` depending on the entry point (Web, Feign, or `@SentinelResource`).

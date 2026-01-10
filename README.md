@@ -1350,6 +1350,35 @@ stateDiagram-v2
 
 > **Best Practice**: Configure Circuit Breaking on the **Client Side** (Caller) to protect itself from downstream failures.
 
+### Hotspot Parameter Rules (ParamFlowRule)
+
+**Concept**:
+Controls traffic based on specific parameter values (e.g., User ID, Product ID). Useful for preventing "Top K" frequent data from overwhelming the system.
+
+*   **Mechanism**: Uses LRU strategy to track frequent parameters.
+*   **Granularity**: Parameter-level flow control.
+
+**Requirements Examples**:
+1.  **General Limit**: Every user can only access `QPS <= 1` (Prevent bot spam).
+2.  **VVIP Exception**: User `ID=6` allows `QPS <= 100` (Unlimited/High Tier).
+3.  **Blacklist**: Product `ID=666` (Discontinued) allows `QPS = 0` (Deny Access).
+
+```mermaid
+graph LR
+    Req[Request] --> Param{Check Param}
+    Param -- "Hotspot (ID=666)" --> Block[Block (QPS 0)]
+    Param -- "Hotspot (ID=6)" --> PassVIP[Pass (QPS 100)]
+    Param -- "Normal (ID=123)" --> Limit[Default Limit (QPS 1)]
+```
+
+> **Critical Constraint**: Sentinel's default Web Adapter (URLs) does **NOT** support Hotspot Rules automatically.
+> You **MUST** use `@SentinelResource` to define the resource and explicitly pass parameters.
+
+```java
+@SentinelResource(value = "getOrder", blockHandler = "handleBlock")
+public Order getOrder(@RequestParam("id") Long id) { ... }
+```
+
 ### Exception Handling
 
 Sentinel provides multiple ways to handle `BlockException` depending on the entry point (Web, Feign, or `@SentinelResource`).

@@ -1,4 +1,4 @@
-package common;
+package cc.rainyctl.common;
 
 import lombok.Data;
 

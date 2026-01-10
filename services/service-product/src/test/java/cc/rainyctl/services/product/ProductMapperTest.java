@@ -1,7 +1,7 @@
 package cc.rainyctl.services.product;
 
 import cc.rainyctl.services.product.mapper.ProductMapper;
-import cc.rainyctl.common.entity.Product;
+import cc.rainyctl.entity.Product;
 import cc.rainyctl.services.product.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

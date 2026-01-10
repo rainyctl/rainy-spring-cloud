@@ -1,6 +1,6 @@
 package cc.rainyctl.services.order;
 
-import cc.rainyctl.common.entity.Product;
+import cc.rainyctl.entity.Product;
 import cc.rainyctl.services.order.feign.ProductFeignClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

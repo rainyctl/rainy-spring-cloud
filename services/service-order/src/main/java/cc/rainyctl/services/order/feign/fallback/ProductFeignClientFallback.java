@@ -1,6 +1,6 @@
 package cc.rainyctl.services.order.feign.fallback;
 
-import cc.rainyctl.common.entity.Product;
+import cc.rainyctl.entity.Product;
 import cc.rainyctl.services.order.feign.ProductFeignClient;
 import org.springframework.stereotype.Component;
 

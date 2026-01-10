@@ -1,8 +1,8 @@
 package cc.rainyctl.services.order.service.impl;
 
-import cc.rainyctl.common.entity.Order;
-import cc.rainyctl.common.entity.OrderItem;
-import cc.rainyctl.common.entity.Product;
+import cc.rainyctl.entity.Order;
+import cc.rainyctl.entity.OrderItem;
+import cc.rainyctl.entity.Product;
 import cc.rainyctl.services.order.mapper.OrderItemMapper;
 import cc.rainyctl.services.order.mapper.OrderMapper;
 import cc.rainyctl.services.order.service.OrderService;

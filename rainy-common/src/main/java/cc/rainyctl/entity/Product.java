@@ -1,4 +1,4 @@
-package cc.rainyctl.common.entity;
+package cc.rainyctl.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

@@ -3,7 +3,7 @@ package cc.rainyctl.services.order.exception;
 import com.alibaba.csp.sentinel.adapter.spring.webmvc_v6x.callback.BlockExceptionHandler;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import common.R;
+import cc.rainyctl.common.R;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 @Component
 public class RainyBlockExceptionHandler implements BlockExceptionHandler {
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public void handle(HttpServletRequest request,

@@ -1,10 +1,9 @@
 package cc.rainyctl.services.order.controller;
 
-import cc.rainyctl.common.entity.Order;
+import cc.rainyctl.entity.Order;
 import cc.rainyctl.services.order.config.OrderServiceProperties;
 import cc.rainyctl.services.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;

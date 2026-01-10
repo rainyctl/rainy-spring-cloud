@@ -1,6 +1,6 @@
 package cc.rainyctl.services.order.service;
 
-import cc.rainyctl.common.entity.Order;
+import cc.rainyctl.entity.Order;
 
 public interface OrderService {
 

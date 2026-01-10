@@ -1,6 +1,6 @@
 package cc.rainyctl.services.product.controller;
 
-import cc.rainyctl.common.entity.Product;
+import cc.rainyctl.entity.Product;
 import cc.rainyctl.services.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

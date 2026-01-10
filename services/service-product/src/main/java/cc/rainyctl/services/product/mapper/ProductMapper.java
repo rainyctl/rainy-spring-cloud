@@ -1,7 +1,7 @@
 package cc.rainyctl.services.product.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import cc.rainyctl.common.entity.Product;
+import cc.rainyctl.entity.Product;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

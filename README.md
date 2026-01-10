@@ -1366,9 +1366,9 @@ Controls traffic based on specific parameter values (e.g., User ID, Product ID).
 ```mermaid
 graph LR
     Req[Request] --> Param{Check Param}
-    Param -- "Hotspot (ID=666)" --> Block[Block (QPS 0)]
-    Param -- "Hotspot (ID=6)" --> PassVIP[Pass (QPS 100)]
-    Param -- "Normal (ID=123)" --> Limit[Default Limit (QPS 1)]
+    Param -- "Hotspot (ID=666)" --> Block["Block (QPS 0)"]
+    Param -- "Hotspot (ID=6)" --> PassVIP["Pass (QPS 100)"]
+    Param -- "Normal (ID=123)" --> Limit["Default Limit (QPS 1)"]
 ```
 
 > **Critical Constraint**: Sentinel's default Web Adapter (URLs) does **NOT** support Hotspot Rules automatically.

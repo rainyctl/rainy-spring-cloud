@@ -1310,6 +1310,46 @@ graph LR
 
 > **Reference**: [Sentinel Flow Control Documentation](https://github.com/alibaba/Sentinel/wiki/Flow-Control-Regulation)
 
+### Circuit Breaking Rules (DegradeRule)
+
+**Concept**:
+Prevents the "Avalanche Effect" by cutting off access to unstable resources. It follows a circuit breaker pattern (Closed -> Open -> Half-Open).
+
+**State Machine**:
+*   **Closed**: Service is healthy. Traffic passes.
+*   **Open**: Service is unstable. Requests are blocked immediately (Fast Fail).
+*   **Half-Open**: After `timeWindow`, a test request is allowed.
+    *   Success -> **Closed**.
+    *   Failure -> **Open**.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Closed
+    Closed --> Open: Strategy Triggered
+    Open --> HalfOpen: timeWindow Passed
+    HalfOpen --> Closed: Request Success
+    HalfOpen --> Open: Request Failed
+```
+
+**Degrade Strategies**:
+
+1.  **Slow Request Ratio (Slow Call Ratio)**
+    *   **Trigger**: Request takes longer than `Max RT`.
+    *   **Condition**: `Slow Ratio > Threshold` AND `Requests >= Min Request Amount`.
+    *   **Use Case**: Service responding too slowly (e.g., DB lock).
+
+2.  **Error Ratio**
+    *   **Trigger**: Request throws an exception.
+    *   **Condition**: `Error Ratio > Threshold` AND `Requests >= Min Request Amount`.
+    *   **Use Case**: Service throwing many errors (e.g., Buggy deployment).
+
+3.  **Error Count**
+    *   **Trigger**: Request throws an exception.
+    *   **Condition**: `Error Count > Threshold` AND `Requests >= Min Request Amount`.
+    *   **Use Case**: Low volume traffic where ratio is unstable.
+
+> **Best Practice**: Configure Circuit Breaking on the **Client Side** (Caller) to protect itself from downstream failures.
+
 ### Exception Handling
 
 Sentinel provides multiple ways to handle `BlockException` depending on the entry point (Web, Feign, or `@SentinelResource`).

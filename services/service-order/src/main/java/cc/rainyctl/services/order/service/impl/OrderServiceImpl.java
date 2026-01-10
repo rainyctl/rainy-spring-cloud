@@ -3,6 +3,7 @@ package cc.rainyctl.services.order.service.impl;
 import cc.rainyctl.entity.Order;
 import cc.rainyctl.entity.OrderItem;
 import cc.rainyctl.entity.Product;
+import cc.rainyctl.services.order.feign.ProductFeignClient;
 import cc.rainyctl.services.order.mapper.OrderItemMapper;
 import cc.rainyctl.services.order.mapper.OrderMapper;
 import cc.rainyctl.services.order.service.OrderService;
@@ -34,13 +35,16 @@ public class OrderServiceImpl implements OrderService {
 
     private final LoadBalancerClient loadBalancerClient;
 
+    private final ProductFeignClient productFeignClient;
+
     @SentinelResource(value = "createOrder", blockHandler = "createOrderFallback")
     @Override
     public Order createOrder(Long productId, Long userId, int count) {
         // 1. RPC call to get product info
         // Product product = getProductFromRemote(productId);
         // Product product = getProductFromRemoteWithLoadBalancing(productId);
-        Product product = getProductFromRemoteWithLoadBalancingByAnnotation(productId);
+        // Product product = getProductFromRemoteWithLoadBalancingByAnnotation(productId);
+        Product product = getProductFromRemoteWithFeign(productId);
 
         // 2. calculate total
         BigDecimal amount = product.getPrice().multiply(new BigDecimal(count));
@@ -80,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
     private Product getProductFromRemote(Long productId) {
         List<ServiceInstance> instances = discoveryClient.getInstances("service-product");
         ServiceInstance instance = instances.get(0);
-        String url = String.format("http://%s:%s/product/%s", instance.getHost(), instance.getPort(), productId);
+        String url = String.format("http://%s:%s/api/product/%s", instance.getHost(), instance.getPort(), productId);
         log.info("Calling url for product: {}", url);
         return restTemplate.getForObject(url, Product.class);
     }
@@ -88,13 +92,20 @@ public class OrderServiceImpl implements OrderService {
     // RPC with load balancing, Round-Robin fashion
     private Product getProductFromRemoteWithLoadBalancing(Long productId) {
         ServiceInstance instance = loadBalancerClient.choose("service-product");
-        String url = String.format("http://%s:%s/product/%s", instance.getHost(), instance.getPort(), productId);
+        String url = String.format("http://%s:%s/api/product/%s", instance.getHost(), instance.getPort(), productId);
         log.info("Calling url for product: {}", url);
         return restTemplate.getForObject(url, Product.class);
     }
 
     // RPC with load balancing based with annotation, Round-Robin fashion
     private Product getProductFromRemoteWithLoadBalancingByAnnotation(Long productId) {
-        return restTemplate.getForObject("http://service-product/product/" + productId, Product.class);
+        return restTemplate.getForObject("http://service-product/api/product/" + productId, Product.class);
+    }
+
+    // RPC with load balancing with Feign
+    private Product getProductFromRemoteWithFeign(Long productId) {
+        Product product = productFeignClient.getProductById(productId);
+        log.info("Product from Feign: {}", product);
+        return product;
     }
 }

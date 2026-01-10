@@ -6,7 +6,7 @@
 ![Spring Cloud Alibaba](https://img.shields.io/badge/Spring%20Cloud%20Alibaba-2025.0.0.0-red)
 ![Nacos](https://img.shields.io/badge/Nacos-3.1.1-blue)
 ![Handcraft](https://img.shields.io/badge/Handcraft-99.999%25-blueviolet)
-![Coffee](https://img.shields.io/badge/Coffee-8-6F4E37)
+![Coffee](https://img.shields.io/badge/Coffee-15-6F4E37)
 
 ☔ Experiments with Distributed Systems in Spring Cloud.
 

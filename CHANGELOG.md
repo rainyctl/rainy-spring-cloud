@@ -57,6 +57,8 @@ All notable changes to this project will be documented in this file.
     - Added deprecation note for the old `spring-cloud-starter-gateway` artifact.
     - **Breaking Change**: Updated Gateway route configuration to use `spring.cloud.gateway.server.webflux.routes` as per latest Spring Cloud standards.
     - **Dependency Clarification**: Documented the requirement for `spring-cloud-starter-loadbalancer` (over the bare library) to enable `lb://` routing support.
+- **Miscellaneous**:
+    - Updated "Coffee" badge in `README.md` to 15.
 - **API Reference**:
     - Updated Product Service endpoints to `/api/product/hello` and `/api/product/{id}`.
     - Updated Order Service endpoints to `/api/order/create` and added `/api/order/config`.

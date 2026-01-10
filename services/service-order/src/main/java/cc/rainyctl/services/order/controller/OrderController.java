@@ -4,20 +4,18 @@ import cc.rainyctl.entity.Order;
 import cc.rainyctl.services.order.config.OrderServiceProperties;
 import cc.rainyctl.services.order.service.OrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/order")
 public class OrderController {
 
     private final OrderService orderService;
 
     private final OrderServiceProperties orderServiceProperties;
 
-    @PostMapping("/order/create")
+    @PostMapping("/create")
     public Order createOrder(
             @RequestParam("userId") Long userId,
             @RequestParam("productId") Long productId,

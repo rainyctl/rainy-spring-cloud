@@ -34,12 +34,6 @@ All notable changes to this project will be documented in this file.
     - **Workflow**: Request processing flow diagram (Check -> Rule -> Block/Fallback).
     - **Dashboard Setup**: Added guide to running Sentinel Dashboard (v1.8.9).
     - **Flow Control Test**: Added step-by-step guide to testing QPS limits with `@SentinelResource`.
-    - **Flow Rules**: Added comprehensive section on Flow Control Modes (Direct, Related, Link) and Traffic Shaping Effects (Quick Fail, Warm Up, Queuing) with custom Mermaid diagrams.
-    - **Circuit Breaking**: Added section on Degrade Rules (Slow Ratio, Error Ratio, Error Count) and State Machine (Closed/Open/Half-Open) with Mermaid diagram.
-    - **Hotspot Rules**: Added section on Hotspot Parameter Flow Control (Top K, VVIP/Blacklist examples) and documented `@SentinelResource` requirement.
-    - **Other Rules**: Briefly documented System Adaptive Protection (SystemRule) and Authority Control (AuthorityRule).
-    - **Exception Handling**: Added explanation of `SentinelWebInterceptor` (Path 1), `@SentinelResource` (Path 2), OpenFeign (Path 3), and Manual `SphU` (Path 4) flows.
-    - **Sentinel Resource**: Added comparison table for `blockHandler` vs `fallback` (Sentinel rules vs Business exceptions).
 - **Distributed Configuration**: Added comprehensive guide covering:
     - Basic setup with `spring-cloud-starter-alibaba-nacos-config`.
     - Dynamic refresh using `@RefreshScope` and recommended `@ConfigurationProperties` approach.
@@ -58,7 +52,6 @@ All notable changes to this project will be documented in this file.
 - **Order Service**: Added JSON response example for order creation.
 - **General**:
     - Added "Coffee: 8" shield to `README.md`.
-    - Updated "Coffee" shield to 13 in `README.md`.
     - Added visual stars (★) to recommended approaches.
     - Added "Troubleshooting" section covering MyBatis-Plus dependency issues and Mapper scanning.
 

@@ -54,6 +54,7 @@ All notable changes to this project will be documented in this file.
 - **Order Service**: Added JSON response example for order creation.
 - **General**:
     - Added "Coffee: 8" shield to `README.md`.
+    - Updated "Coffee" shield to 13 in `README.md`.
     - Added visual stars (★) to recommended approaches.
     - Added "Troubleshooting" section covering MyBatis-Plus dependency issues and Mapper scanning.
 

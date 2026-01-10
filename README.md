@@ -1304,7 +1304,7 @@ graph LR
 ```mermaid
 graph LR
     Requests[Burst Traffic] -->|Queue| Bucket{Leaky Bucket}
-    Bucket -->|Fixed Rate (e.g. 1 req/500ms)| Process[System]
+    Bucket -->|"Fixed Rate: 1 req/500ms"| Process[System]
     Bucket -->|Timeout| Drop[Drop Request]
 ```
 

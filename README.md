@@ -1379,6 +1379,18 @@ graph LR
 public Order getOrder(@RequestParam("id") Long id) { ... }
 ```
 
+### Other Rules (Advanced)
+
+**1. System Adaptive Protection (SystemRule)**
+*   **Concept**: Global protection for the entire application (not resource-specific).
+*   **Triggers**: Total Load, CPU Usage, Average RT, Thread Count, or Total QPS.
+*   **Use Case**: "Last line of defense" to prevent server crash under extreme load.
+
+**2. Authority Control (AuthorityRule)**
+*   **Concept**: Controls access based on the **caller's origin** (Requester App/IP).
+*   **Modes**: Whitelist (Allow) or Blacklist (Deny).
+*   **Requirement**: You must implement `RequestOriginParser` to define how to extract the "origin" (e.g., from an HTTP Header).
+
 ### Exception Handling
 
 Sentinel provides multiple ways to handle `BlockException` depending on the entry point (Web, Feign, or `@SentinelResource`).

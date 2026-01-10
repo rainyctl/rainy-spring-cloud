@@ -12,6 +12,8 @@ spring:
               uri: lb://service-product
               predicates:
                 - Path=/api/product/**
+              filters:
+                - OnceToken=X-JOJO-Token, uuid
             - id: jojo-vip
               uri: https://cn.bing.com
               predicates:

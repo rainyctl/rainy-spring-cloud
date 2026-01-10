@@ -50,6 +50,9 @@ All notable changes to this project will be documented in this file.
     - Added client-side vs server-side comparison notes.
 - **Service Discovery**: Added IntelliJ IDEA cluster simulation tip.
 - **Order Service**: Added JSON response example for order creation.
+- **Gateway**: Added Section 8 covering:
+    - Key features (Unified Entry, Routing, Load Balancing, etc.).
+    - Architecture diagram visualizing the Gateway's role in the cluster.
 - **General**:
     - Added "Coffee: 8" shield to `README.md`.
     - Added visual stars (★) to recommended approaches.

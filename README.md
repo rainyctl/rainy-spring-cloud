@@ -1215,6 +1215,49 @@ Spam the request (more than 1 per second).
 You will see the default blocking message:
 > BlockedbySentinel(flowlimiting)
 
+## 8. Gateway
+
+### What & Why
+The API Gateway acts as the single entry point for all clients. Instead of calling individual services (Order, Product) directly, clients send requests to the Gateway, which routes them to the appropriate service.
+
+**Key Features**:
+1.  **Unified Entry**: Single point of access for all microservices.
+2.  **Request Routing**: Routes requests to the correct service based on path or other criteria.
+3.  **Load Balancing**: Distributes traffic across service instances.
+4.  **Traffic Control**: Rate limiting and flow control.
+5.  **Identity Authentication**: Centralized auth verification.
+6.  **Protocol Conversion**: Translates between protocols (e.g., HTTP to RPC).
+7.  **System Monitoring**: Observability and logging.
+8.  **Security Protection**: Firewall, IP whitelisting, etc.
+
+### Architecture
+
+```mermaid
+graph LR
+    Frontend[Frontend]
+    Gateway[Gateway]
+    Registry[("Service Registry/Discovery")]
+    
+    subgraph Cluster ["Business Cluster"]
+        Order[Order Service]
+        Product[Product Service]
+        Payment[Payment Service]
+        Logistics[Logistics Service]
+    end
+
+    Frontend --> Gateway
+    Gateway -->|"Request Routing"| Order
+    Gateway -->|"Request Routing"| Product
+    Gateway -->|"Request Routing"| Payment
+    Gateway -->|"Request Routing"| Logistics
+    
+    Gateway -->|"Service Discovery"| Registry
+    Order -->|"Service Registration"| Registry
+    Product -->|"Service Registration"| Registry
+    Payment -->|"Service Registration"| Registry
+    Logistics -->|"Service Registration"| Registry
+```
+
 ## Modules
 
 ### Root Configuration

@@ -1424,6 +1424,77 @@ graph TD
 
 For more details, refer to the [Official Seata Documentation](https://seata.apache.org/docs/overview/what-is-seata/).
 
+### Setup Guide
+
+#### Step 1: Check Version
+First, check the Seata version defined in your `spring-cloud-alibaba-dependencies` (usually in the root `pom.xml` or inherited BOM).
+> For this project, the Seata version is **2.5.0**.
+
+#### Step 2: Seata Server Setup
+1.  **Download**: Download the Seata Server package from the [Official Release Page](https://github.com/apache/incubator-seata/releases).
+2.  **Start**: Navigate to the `bin` folder and run the startup script.
+    ```bash
+    ./seata-server.sh
+    ```
+    *   This starts the server in the **background** (nohup).
+    *   **Port**: Default is `8091`.
+    *   **Logs**: Check `nohup.out` for startup logs.
+    *   **Note**: The old Web UI at port `7091` is no longer available in newer versions.
+3.  **Stop**: To stop the server, you need to manually kill the process (e.g., `kill -9 <pid>`).
+
+#### Step 3: Client Configuration
+To enable Seata in your microservices (Order, Product, etc.):
+
+1.  **Add Dependency**:
+    Add the starter to your service's `pom.xml`:
+    ```xml
+    <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
+    </dependency>
+    ```
+
+2.  **Configuration**:
+    While Seata supports Nacos for configuration management (recommended for production), for simplicity we will use a local `file.conf` in each service's `resources` folder.
+
+    **file.conf**:
+    ```conf
+    service {
+      # Transaction service group mapping
+      # Format: vgroupMapping.<TxServiceGroup> = "<SeataServerGroup>"
+      vgroupMapping.default_tx_group = "default"
+      
+      # Only support when registry.type=file
+      default.grouplist = "127.0.0.1:8091"
+      
+      # Degrade current not support
+      enableDegrade = false
+      
+      # Disable Seata
+      disableGlobalTransaction = false
+    }
+    ```
+
+#### Step 4: Database Setup (AT Mode)
+We are using **AT Mode** (Automatic Transaction), which requires an `undo_log` table in **each** microservice's database to store the before/after images of data for rollback.
+
+1.  **Create Table**: Run the following SQL in both `rainy_order` and `rainy_product` databases.
+    *   [Official undo_log SQL Script](https://seata.apache.org/docs/user/quickstart/?utm_source=chatgpt.com#step-2-create-undo_log-table)
+
+    ```sql
+    -- Standard Seata AT Mode Undo Log Table
+    CREATE TABLE IF NOT EXISTS `undo_log` (
+        `branch_id`     BIGINT       NOT NULL COMMENT 'branch transaction id',
+        `xid`           VARCHAR(128) NOT NULL COMMENT 'global transaction id',
+        `context`       VARCHAR(128) NOT NULL COMMENT 'undo_log context,such as serialization',
+        `rollback_info` LONGBLOB     NOT NULL COMMENT 'rollback info',
+        `log_status`    INT(11)      NOT NULL COMMENT '0:normal status,1:defense status',
+        `log_created`   DATETIME(6)  NOT NULL COMMENT 'create datetime',
+        `log_modified`  DATETIME(6)  NOT NULL COMMENT 'modify datetime',
+        UNIQUE KEY `ux_undo_log` (`xid`, `branch_id`)
+    ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COMMENT ='AT transaction mode undo table';
+    ```
+
 ## Modules
 
 ### Root Configuration

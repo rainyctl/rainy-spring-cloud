@@ -62,6 +62,11 @@ All notable changes to this project will be documented in this file.
         - Explained the need for a Distributed Transaction Manager.
         - **Seata Architecture**: Explained the TC (Coordinator), TM (Manager), and RM (Resource) roles and their interaction workflow.
         - **Project Mapping**: Added Mermaid graph mapping TC, TM, and RM roles to our specific services (Order Service as TM/RM, Product Service as RM).
+        - **Setup Guide**: Added step-by-step instructions for:
+            - Checking Seata version (2.5.0).
+            - Downloading and running Seata Server (Port 8091).
+            - Configuring Client (Dependency & `file.conf` with `vgroupMapping`).
+            - Setting up Database (AT Mode `undo_log` table).
     - Added deprecation note for the old `spring-cloud-starter-gateway` artifact.
     - **Breaking Change**: Updated Gateway route configuration to use `spring.cloud.gateway.server.webflux.routes` as per latest Spring Cloud standards.
     - **Dependency Clarification**: Documented the requirement for `spring-cloud-starter-loadbalancer` (over the bare library) to enable `lb://` routing support.

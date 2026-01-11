@@ -11,6 +11,8 @@
 
 [中文文档](./README_CN.md)
 
+> 📖 **Documentation**: For a comprehensive guide, detailed architecture, and step-by-step tutorials, check out the [Wiki](https://github.com/rainyctl/rainy-spring-cloud/wiki).
+
 ☔ Experiments with Distributed Systems in Spring Cloud.
 
 ## Architecture

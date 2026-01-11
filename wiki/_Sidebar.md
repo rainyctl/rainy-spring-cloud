@@ -1,19 +1,12 @@
 * [Home](Home)
-* [Getting Started](Getting-Started)
-* [Project Structure](Project-Structure)
-
-### Core Components
-* [Service Registry (Nacos)](Service-Registry)
-* [Service Discovery](Service-Discovery)
-* [Remote Procedure Call](RPC-Architecture)
-* [Load Balancing](Load-Balancing)
-* [Distributed Config](Configuration-Management)
-
-### Advanced
-* [OpenFeign](OpenFeign)
-* [Sentinel (Resilience)](Sentinel)
-* [API Gateway](API-Gateway)
-* [Distributed Transaction (Seata)](Distributed-Transaction)
-
-### Support
-* [Troubleshooting](Troubleshooting)
+* [1. Service Registry](1-Service-Registry)
+* [2. Service Discovery](2-Service-Discovery)
+* [3. Remote Procedure Call](3-Remote-Procedure-Call)
+* [4. Load Balancing](4-Load-Balancing)
+* [5. Distributed Configuration](5-Distributed-Configuration)
+* [6. OpenFeign](6-OpenFeign)
+* [7. Sentinel](7-Sentinel)
+* [8. Gateway](8-Gateway)
+* [9. Distributed Transactions](9-Distributed-Transactions)
+* [10. Complete Architecture](10-Complete-Architecture)
+* [11. Reference & Troubleshooting](11-Reference)

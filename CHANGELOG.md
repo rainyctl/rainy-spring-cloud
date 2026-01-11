@@ -68,6 +68,8 @@ All notable changes to this project will be documented in this file.
             - Configuring Client (Dependency & `file.conf` with `vgroupMapping`).
             - Setting up Database (AT Mode `undo_log` table).
             - Enabling Global Transaction (`@GlobalTransactional` on TM entry point).
+        - **AT Mode Explanation**: Added detailed explanation of how Seata AT mode works (Phase 1 Local Commit + Phase 2 Commit/Rollback) with a Mermaid flow diagram illustrating the Undo Log mechanism.
+    - **Fixed**: Corrected Mermaid graph syntax error by quoting node labels containing parentheses (e.g., `["Validate Data<br>(Current == After Image?)"]`).
     - Added deprecation note for the old `spring-cloud-starter-gateway` artifact.
     - **Breaking Change**: Updated Gateway route configuration to use `spring.cloud.gateway.server.webflux.routes` as per latest Spring Cloud standards.
     - **Dependency Clarification**: Documented the requirement for `spring-cloud-starter-loadbalancer` (over the bare library) to enable `lb://` routing support.

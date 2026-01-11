@@ -1512,6 +1512,71 @@ Finally, annotate your business entry point (Transaction Manager) with `@GlobalT
 *   **@Transactional**: Ensures the local database operations (e.g., inserting the order) are part of a local transaction.
 *   **@SentinelResource**: Wraps the method for flow control and circuit breaking.
 
+### How Seata AT Mode Works
+
+Seata AT mode is a non-intrusive distributed transaction solution. It relies on a two-phase commit protocol but optimizes it for performance by committing local transactions **early** (in Phase 1), rather than holding database locks until Phase 2.
+
+#### Phase 1: Execute & Prepare (The Local Commit)
+In this phase, Seata intercepts your business SQL execution to generate an "Undo Log" before committing the local transaction.
+
+1.  **Parse SQL**: Seata analyzes your SQL (e.g., `UPDATE storage_tbl SET count = count - 2 ...`).
+2.  **Before Image**: Queries the data **before** the update to save the original state.
+3.  **Execute SQL**: Executes the business SQL updates the database.
+4.  **After Image**: Queries the data **after** the update to save the new state.
+5.  **Insert Undo Log**: Inserts a record into the `undo_log` table containing both images and the Global Transaction ID (XID).
+6.  **Local Commit**: Commits the Business SQL and the Undo Log insertion in **one local transaction**.
+7.  **Report**: Reports the branch status to the TC (Transaction Coordinator).
+
+#### Phase 2: Global Commit or Rollback
+The TC decides whether to commit or rollback based on the status of all branches.
+
+*   **Scenario A: Global Commit (All Success)**
+    1.  TC notifies RMs (Resource Managers) to **Commit**.
+    2.  RMs place the task in an async queue.
+    3.  **Action**: RMs simply **delete** the `undo_log` record (since the data is already committed).
+    4.  *Efficiency*: This is extremely fast as no database rollback is needed.
+
+*   **Scenario B: Global Rollback (Any Failure)**
+    1.  TC notifies RMs to **Rollback**.
+    2.  RMs find the corresponding `undo_log` record using XID and Branch ID.
+    3.  **Validation**: Compares the current database data with the **After Image**.
+        *   *Why?* To ensure no other dirty writes occurred since Phase 1.
+    4.  **Restore**: Uses the **Before Image** to restore the data to its original state.
+    5.  **Cleanup**: Deletes the `undo_log` record.
+
+#### Visualizing the AT Protocol
+
+```mermaid
+graph TD
+    subgraph "Phase 1: Local Execution"
+        Start((Start)) --> Parse[Parse SQL]
+        Parse --> BI[Query Before Image]
+        BI --> Exec[Execute Business SQL]
+        Exec --> AI[Query After Image]
+        AI --> InsertLog[Insert Undo Log]
+        InsertLog --> Commit[Local Commit]
+        Commit --> Report[Report Status to TC]
+    end
+
+    subgraph "Phase 2: Global Decision"
+        Report --> Decision{TC Decision}
+        
+        Decision -- "Global Commit" --> AsyncQueue[Async Queue]
+        AsyncQueue --> DeleteLog[Delete Undo Log]
+        DeleteLog --> EndSuccess((Finish))
+        
+        Decision -- "Global Rollback" --> FindLog[Find Undo Log]
+        FindLog --> Check["Validate Data<br>(Current == After Image?)"]
+        Check -- Yes --> Restore["Restore Data<br>(Use Before Image)"]
+        Restore --> DeleteLogRoll[Delete Undo Log]
+        DeleteLogRoll --> EndFail((Finish))
+    end
+    
+    style Decision fill:#f9f,stroke:#333,stroke-width:4px
+    style Commit fill:#9f9,stroke:#333
+    style Restore fill:#f99,stroke:#333
+```
+
 ## Modules
 
 ### Root Configuration

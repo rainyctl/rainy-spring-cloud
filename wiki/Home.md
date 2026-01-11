@@ -1,4 +1,4 @@
-# Welcome to rainy-spring-cloud
+# rainy-spring-cloud
 
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.9-brightgreen)
@@ -11,61 +11,43 @@
 
 This project demonstrates a complete microservices architecture using the latest Spring Cloud Alibaba stack.
 
-## Architecture Overview
+## Architecture
 
 ```mermaid
 graph TD
-    User((User))
-    
-    subgraph "Control Plane"
-        Nacos[("Nacos<br>(Registry & Config)<br>:8848")]
-        Sentinel[("Sentinel Dashboard<br>(Monitoring)<br>:8859")]
-        Seata[("Seata Server<br>(Tx Coordinator)<br>:8091")]
-    end
-    
-    subgraph "Data Plane"
-        Gateway[("API Gateway<br>:7777")]
-        
-        subgraph "Service Cluster"
-            Order[("Order Service<br>:8001")]
-            Product[("Product Service<br>:9001")]
-        end
-        
-        subgraph "Storage"
-            DB_Order[(Order DB)]
-            DB_Product[(Product DB)]
-        end
+    subgraph Infrastructure
+        Nacos[("Nacos Server<br>(Registry & Config)")]
+        NacosPorts["Ports:<br>8080 (Console)<br>8848 (API)<br>9848 (gRPC)"]
+        Nacos --- NacosPorts
     end
 
-    %% User Flow
-    User -->|1. Request| Gateway
-    Gateway -->|2. Route & Filter| Order
-    Gateway -->|2. Route & Filter| Product
-    
-    %% Service Interactions
-    Order -->|3. Feign RPC| Product
-    
-    %% Infrastructure Connections
-    Gateway -.->|Register/Discover| Nacos
-    Order -.->|Register/Discover/Config| Nacos
-    Product -.->|Register/Discover/Config| Nacos
-    
-    Order -.->|Metrics/Rules| Sentinel
-    Product -.->|Metrics/Rules| Sentinel
-    
-    Order <-->|Global Tx| Seata
-    Product <-->|Global Tx| Seata
-    
-    Order -->|CRUD| DB_Order
-    Product -->|CRUD| DB_Product
+    subgraph Microservices
+        Order[("Service Order<br>(Port: 8001)")]
+        Product[("Service Product<br>(Port: 9001)")]
+    end
 
-    classDef control fill:#fab1a0,stroke:#333,stroke-width:2px;
-    classDef service fill:#74b9ff,stroke:#333,stroke-width:2px;
-    classDef storage fill:#dfe6e9,stroke:#333,stroke-width:2px;
+    Order -->|Register & Discover| Nacos
+    Product -->|Register & Discover| Nacos
     
-    class Nacos,Sentinel,Seata control;
-    class Gateway,Order,Product service;
-    class DB_Order,DB_Product storage;
+    classDef service fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef infra fill:#9cf,stroke:#333,stroke-width:2px;
+    
+    class Order,Product service;
+    class Nacos infra;
+```
+
+## Project Structure
+
+This is a multi-module Maven project structured as follows:
+
+```
+rainy-spring-cloud
+├── gateway                 # API Gateway (Port: 7777)
+├── rainy-common            # Shared entities (Order/Product/...)
+├── services               # Container for microservices
+│   ├── service-order      # Order Management Service
+│   └── service-product    # Product Management Service
+└── pom.xml                # Root Maven configuration
 ```
 
 ## Technology Stack
@@ -74,7 +56,24 @@ graph TD
 - **Spring Boot**: 3.5.9
 - **Spring Cloud**: 2025.0.1
 - **Spring Cloud Alibaba**: 2025.0.0.0
-- **Service Discovery & Config**: Nacos
-- **Resilience**: Sentinel
-- **Gateway**: Spring Cloud Gateway (WebFlux)
-- **Distributed Transaction**: Seata
+- **Service Discovery**: Nacos
+
+## Quick Start (Local)
+
+Prereqs: Nacos at `127.0.0.1:8848` and MySQL schemas `rainy_product` / `rainy_order` (see “Database Setup”).
+
+```bash
+# Start service-product (default: 9001)
+./mvnw -pl services/service-product spring-boot:run
+
+# Start service-order (default: 8001)
+./mvnw -pl services/service-order spring-boot:run
+```
+
+```bash
+# Smoke checks
+curl http://localhost:9001/api/product/hello
+curl http://localhost:9001/api/product/1
+curl -X POST "http://localhost:8001/api/order/create?userId=1&productId=1&count=1"
+curl http://localhost:8001/api/order/config
+```

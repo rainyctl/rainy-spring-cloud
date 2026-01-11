@@ -9,6 +9,8 @@
 ![Handcraft](https://img.shields.io/badge/Handcraft-99.999%25-blueviolet)
 ![Coffee](https://img.shields.io/badge/Coffee-16-6F4E37)
 
+[中文文档](./README_CN.md)
+
 ☔ Experiments with Distributed Systems in Spring Cloud.
 
 ## Architecture

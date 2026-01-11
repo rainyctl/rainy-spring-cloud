@@ -78,6 +78,7 @@ All notable changes to this project will be documented in this file.
 - **Miscellaneous**:
     - Updated "Coffee" badge in `README.md` to 16.
     - Added Seata version badge (2.5.0) to `README.md`.
+    - Added Chinese translation of the documentation (`README_CN.md`) and linked it in `README.md`.
 - **API Reference**:
     - Updated Product Service endpoints to `/api/product/hello` and `/api/product/{id}`.
     - Updated Order Service endpoints to `/api/order/create` and added `/api/order/config`.

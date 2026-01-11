@@ -1495,6 +1495,23 @@ We are using **AT Mode** (Automatic Transaction), which requires an `undo_log` t
     ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COMMENT ='AT transaction mode undo table';
     ```
 
+#### Step 5: Enable Global Transaction
+Finally, annotate your business entry point (Transaction Manager) with `@GlobalTransactional`.
+
+**OrderServiceImpl.java**:
+```java
+    @GlobalTransactional // <--- Starts the Global Transaction (Seata)
+    @Transactional       // <--- Still needed for the Local Transaction (Database)
+    @SentinelResource(value = "createOrder", blockHandler = "createOrderFallback")
+    @Override
+    public Order createOrder(Long productId, Long userId, int count) {
+        // ... business logic ...
+    }
+```
+*   **@GlobalTransactional**: Tells Seata to begin a global transaction. If any participant fails, Seata coordinates a global rollback.
+*   **@Transactional**: Ensures the local database operations (e.g., inserting the order) are part of a local transaction.
+*   **@SentinelResource**: Wraps the method for flow control and circuit breaking.
+
 ## Modules
 
 ### Root Configuration

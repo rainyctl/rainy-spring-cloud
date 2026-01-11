@@ -80,9 +80,9 @@ public class OrderServiceImpl implements OrderService {
         // 6. SIMULATE ERROR HERE
         // buy something in stock but trigger the rollback of Order here
         // you will see the stock is deducted anyway while no order is created
-        if (true) {
-            throw new RuntimeException("Simulated unexpected crash after remote call!");
-        }
+//        if (true) {
+//            throw new RuntimeException("Simulated unexpected crash after remote call!");
+//        }
 
         // a better way is to separate entity from DTO
         product.setNum(count);

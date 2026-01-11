@@ -60,6 +60,8 @@ All notable changes to this project will be documented in this file.
         - Documented the "Failure Scenario" where local transactions lead to data inconsistency (Stock lost, No Order).
         - Added Mermaid sequence diagram visualizing the distributed transaction failure.
         - Explained the need for a Distributed Transaction Manager.
+        - **Seata Architecture**: Explained the TC (Coordinator), TM (Manager), and RM (Resource) roles and their interaction workflow.
+        - **Project Mapping**: Added Mermaid graph mapping TC, TM, and RM roles to our specific services (Order Service as TM/RM, Product Service as RM).
     - Added deprecation note for the old `spring-cloud-starter-gateway` artifact.
     - **Breaking Change**: Updated Gateway route configuration to use `spring.cloud.gateway.server.webflux.routes` as per latest Spring Cloud standards.
     - **Dependency Clarification**: Documented the requirement for `spring-cloud-starter-loadbalancer` (over the bare library) to enable `lb://` routing support.

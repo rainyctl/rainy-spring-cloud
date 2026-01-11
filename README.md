@@ -1364,7 +1364,65 @@ sequenceDiagram
 
 To solve this, we need a mechanism to ensure that **either all** services commit **or all** roll back, maintaining data consistency across the distributed system. This is where **Seata** comes in.
 
-*(Section under construction: Integration pending)*
+#### How Seata Works
+
+Seata uses a three-role architecture to manage distributed transactions:
+
+1.  **TC (Transaction Coordinator)**:
+    *   **Role**: The "Boss". A separate server (like Nacos) that maintains the status of the global transaction and all branch transactions.
+    *   **Responsibility**: Drives the global commit or rollback.
+
+2.  **TM (Transaction Manager)**:
+    *   **Role**: The "Requester". Usually embedded in the service that starts the flow (e.g., Order Service).
+    *   **Responsibility**: Defines the scope of the global transaction. It tells the TC to "Begin", "Commit", or "Rollback" the global transaction.
+
+3.  **RM (Resource Manager)**:
+    *   **Role**: The "Worker". Embedded in every service that touches a database (e.g., Order, Product, Account).
+    *   **Responsibility**: Manages the local database resources. It registers its branch transaction with the TC and reports its status (success/failure).
+
+**The Workflow**:
+1.  **TM** asks **TC** to begin a new Global Transaction.
+2.  **TM** calls microservices (the **RMs**).
+3.  Each **RM** executes its local SQL, but before committing, it registers with **TC**.
+4.  If any **RM** fails, **TM** tells **TC** to rollback. **TC** then instructs all **RMs** to undo their changes.
+
+### Mapping Seata to Our Architecture
+
+In our `rainy-spring-cloud` project, the roles are assigned as follows:
+
+```mermaid
+graph TD
+    TC[("Seata Server<br>(Transaction Coordinator)")]
+    
+    subgraph "Order Service"
+        TM[("TM (Transaction Manager)<br>@GlobalTransactional")]
+        RM_Order[("RM (Resource Manager)<br>Order DB Agent")]
+    end
+    
+    subgraph "Product Service"
+        RM_Product[("RM (Resource Manager)<br>Product DB Agent")]
+    end
+
+    TM <-->|"Begin / Commit / Rollback"| TC
+    RM_Order <-->|"Register / Report"| TC
+    RM_Product <-->|"Register / Report"| TC
+    
+    TM -->|"RPC Call (Feign)"| RM_Product
+    
+    classDef tc fill:#ff9900,stroke:#333,stroke-width:2px;
+    classDef tm fill:#66ccff,stroke:#333,stroke-width:2px;
+    classDef rm fill:#99cc99,stroke:#333,stroke-width:2px;
+    
+    class TC tc;
+    class TM tm;
+    class RM_Order,RM_Product rm;
+```
+
+*   **TC**: The standalone Seata Server we need to deploy.
+*   **TM**: The `Order Service` (specifically the `createOrder` method), which initiates the global transaction.
+*   **RM**: Both `Order Service` and `Product Service` act as RMs because they both interact with their respective databases (`rainy_order` and `rainy_product`).
+
+For more details, refer to the [Official Seata Documentation](https://seata.apache.org/docs/overview/what-is-seata/).
 
 ## Modules
 

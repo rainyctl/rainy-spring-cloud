@@ -71,10 +71,10 @@ Prereqs: Nacos at `127.0.0.1:8848` and MySQL schemas `rainy_product` / `rainy_or
 
 ```bash
 # Smoke checks
-curl http://localhost:9001/hello
-curl http://localhost:9001/product/1
-curl -X POST "http://localhost:8001/order/create?userId=1&productId=1&count=1"
-curl http://localhost:8001/config
+curl http://localhost:9001/api/product/hello
+curl http://localhost:9001/api/product/1
+curl -X POST "http://localhost:8001/api/order/create?userId=1&productId=1&count=1"
+curl http://localhost:8001/api/order/config
 ```
 
 ## 1. Service Registry (Nacos)
@@ -256,7 +256,7 @@ List<ServiceInstance> instances = discoveryClient.getInstances("service-product"
 ServiceInstance instance = instances.get(0);
 
 // 3. Build URL and call
-String url = String.format("http://%s:%s/product/%s", instance.getHost(), instance.getPort(), productId);
+String url = String.format("http://%s:%s/api/product/%s", instance.getHost(), instance.getPort(), productId);
 Product product = restTemplate.getForObject(url, Product.class);
 ```
 *This is the foundational "glue" of microservices before adding magic like LoadBalancer or Feign.*
@@ -320,7 +320,7 @@ INSERT INTO t_product (name, price, stock) VALUES
 ```
 
 ### Understanding Order Creation Logic
-When a user places an order (e.g., `POST /order/create?userId=1&productId=2`), the following happens behind the scenes.
+When a user places an order (e.g., `POST /api/order/create?userId=1&productId=2`), the following happens behind the scenes.
 **Note**: We use `MyBatis-Plus` to simplify database interactions.
 
 #### 1. The Logic Flow
@@ -492,22 +492,22 @@ Now, instead of `localhost:9001`, you use the **Service Name** (`service-product
 
 ```java
 // The URL is now host-agnostic!
-String url = "http://service-product/product/" + productId;
+String url = "http://service-product/api/product/" + productId;
 Product product = restTemplate.getForObject(url, Product.class);
 ```
 
 **How it works:**
-1. Spring sees `http://service-product/...`.
+1. Spring sees `http://service-product/api/product/...`.
 2. The `LoadBalancerInterceptor` pauses the request.
 3. It asks the Load Balancer: "Give me an instance for 'service-product'".
-4. It rewrites the URL to `http://192.168.1.5:9001/...` and lets the request proceed.
+4. It rewrites the URL to `http://192.168.1.5:9001/api/product/...` and lets the request proceed.
 
 ### Client-Side vs Server-Side Load Balancing
 
 **Client-side load balancing**
 - The caller resolves service instances and picks one to call.
 - Usually paired with a registry (Nacos) and a client library (Spring Cloud LoadBalancer).
-- In this project: `RestTemplate` + `@LoadBalanced` calling `http://service-product/...`, or Feign with `name = "service-product"` (after enabling Feign).
+- In this project: `RestTemplate` + `@LoadBalanced` calling `http://service-product/api/product/...`, or Feign with `name = "service-product"` (after enabling Feign).
 
 **Server-side load balancing**
 - The caller sends traffic to a single endpoint (VIP / gateway / DNS name).

@@ -79,6 +79,7 @@ All notable changes to this project will be documented in this file.
 - **API Reference**:
     - Updated Product Service endpoints to `/api/product/hello` and `/api/product/{id}`.
     - Updated Order Service endpoints to `/api/order/create` and added `/api/order/config`.
+    - **API Consistency**: Updated all `README.md` examples and code snippets to use the correct `/api/product` and `/api/order` prefixes, matching the actual `Controller` request mappings.
 - **General**:
     - Added "Coffee: 8" shield to `README.md`.
     - Added visual stars (★) to recommended approaches.

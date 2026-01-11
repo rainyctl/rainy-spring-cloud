@@ -1305,6 +1305,17 @@ The Gateway works on a simple yet powerful flow: **Match (Predicate) -> Process 
 
 For a complete list of built-in predicates and filters, refer to the [Official Spring Cloud Gateway Documentation](https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/).
 
+### Cross-Origin Resource Sharing (CORS)
+
+**Why configure it at the Gateway?**
+Browsers enforce the Same-Origin Policy. When your frontend (e.g., `localhost:8080`) tries to call your API (e.g., `localhost:7777`), the browser blocks it unless CORS is configured.
+
+Configuring CORS at the **Gateway** level is the best practice because:
+1.  **Centralization**: You define the rules (allowed origins, methods, headers) in one place, rather than repeating them in every microservice (Order, Product, etc.).
+2.  **Efficiency**: The Gateway handles the preflight (`OPTIONS`) requests, offloading this burden from your business services.
+
+For configuration details, refer to the [CORS Configuration Documentation](https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/#cors-configuration).
+
 ## Modules
 
 ### Root Configuration

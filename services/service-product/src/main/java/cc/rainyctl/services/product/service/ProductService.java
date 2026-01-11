@@ -5,4 +5,6 @@ import cc.rainyctl.entity.Product;
 public interface ProductService {
 
     Product getProductById(Long productId);
+
+    void deductStock(Long productId, int count);
 }

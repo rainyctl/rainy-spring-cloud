@@ -3,6 +3,12 @@ spring:
     gateway:
       server:
         webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origin-patterns: "*"
+                allowed-headers: "*"
+                allowed-methods: "*"
           routes:
             - id: order-route
               uri: lb://service-order

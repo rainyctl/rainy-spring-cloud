@@ -4,10 +4,7 @@ import cc.rainyctl.entity.Product;
 import cc.rainyctl.services.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -26,5 +23,11 @@ public class ProductController {
     public Product getProduct(@PathVariable("id") Long productId) {
         log.info("Get product by id: {}", productId);
         return productService.getProductById(productId);
+    }
+
+    @PostMapping("/stock/deduct")
+    public void deductStock(@RequestParam("productId") Long productId,
+                            @RequestParam("count") int count) {
+        productService.deductStock(productId, count);
     }
 }

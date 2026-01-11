@@ -55,6 +55,7 @@ All notable changes to this project will be documented in this file.
     - Architecture diagram visualizing the Gateway's role in the cluster (Port 7777).
     - **Technology Choice**: Documented the use of `spring-cloud-starter-gateway-server-webflux` (Reactive) over MVC for efficiency.
     - **Concepts**: Added overview of Predicates, Filters (Pre/Post), and Global Filters with a link to official docs.
+    - **CORS**: Added section explaining why CORS should be handled at the Gateway level (Centralization & Efficiency).
     - Added deprecation note for the old `spring-cloud-starter-gateway` artifact.
     - **Breaking Change**: Updated Gateway route configuration to use `spring.cloud.gateway.server.webflux.routes` as per latest Spring Cloud standards.
     - **Dependency Clarification**: Documented the requirement for `spring-cloud-starter-loadbalancer` (over the bare library) to enable `lb://` routing support.

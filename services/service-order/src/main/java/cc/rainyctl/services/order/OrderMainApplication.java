@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -17,6 +18,7 @@ import java.util.concurrent.Executors;
 @Slf4j
 @EnableDiscoveryClient // enable service discovery
 @EnableFeignClients
+@EnableTransactionManagement
 @SpringBootApplication
 public class OrderMainApplication {
 

@@ -3,6 +3,7 @@ package cc.rainyctl.services.order.service.impl;
 import cc.rainyctl.entity.Order;
 import cc.rainyctl.entity.OrderItem;
 import cc.rainyctl.entity.Product;
+import cc.rainyctl.services.order.feign.DeductProductFeignClient;
 import cc.rainyctl.services.order.feign.ProductFeignClient;
 import cc.rainyctl.services.order.mapper.OrderItemMapper;
 import cc.rainyctl.services.order.mapper.OrderMapper;
@@ -38,6 +39,8 @@ public class OrderServiceImpl implements OrderService {
 
     private final ProductFeignClient productFeignClient;
 
+    private final DeductProductFeignClient deductProductFeignClient;
+
     @Transactional
     @SentinelResource(value = "createOrder", blockHandler = "createOrderFallback")
     @Override
@@ -58,6 +61,7 @@ public class OrderServiceImpl implements OrderService {
         order.setAddress("Cairo, Egypt");
         order.setTotalAmount(amount);
         orderMapper.insert(order);
+        log.info("Order created: {}", order);
 
         // 4. save order item (snapshot)
         OrderItem item = new OrderItem();
@@ -67,9 +71,22 @@ public class OrderServiceImpl implements OrderService {
         item.setProductPrice(product.getPrice());
         item.setNum(count);
         orderItemMapper.insert(item);
+        log.info("OrderItem created: {}", item);
+
+        // 5. deduct stock
+        deductProductFeignClient.deductStock(productId, count);
+        log.info("Product {} stock deducted by {}", productId, count);
+
+        // 6. SIMULATE ERROR HERE
+        // buy something in stock but trigger the rollback of Order here
+        // you will see the stock is deducted anyway while no order is created
+        if (true) {
+            throw new RuntimeException("Simulated unexpected crash after remote call!");
+        }
 
         // a better way is to separate entity from DTO
         product.setNum(count);
+        product.setStock(product.getStock() - count); // as a snapshot
         order.setProductList(List.of(product));
 
         return order;

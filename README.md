@@ -1316,6 +1316,56 @@ Configuring CORS at the **Gateway** level is the best practice because:
 
 For configuration details, refer to the [CORS Configuration Documentation](https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/#cors-configuration).
 
+## 9. Distributed Transactions (Seata)
+
+### The Problem: Local Transactions in a Distributed World
+
+In our current microservices architecture, each service manages its own database transaction using `@Transactional`:
+
+*   **Order Service**: Starts a transaction, creates an order, and commits.
+*   **Product Service**: Starts a transaction, deducts stock, and commits.
+
+**The Failure Scenario**:
+Imagine the following flow in `createOrder`:
+1.  **Product Service** is called via Feign. It successfully deducts stock and commits its transaction.
+2.  **Order Service** continues execution but encounters an error (e.g., unexpected crash or exception) *before* committing its own transaction.
+3.  **Result**:
+    *   Order Service **rolls back** (No Order created).
+    *   Product Service **has already committed** (Stock deducted).
+    *   **Data Inconsistency**: We lost inventory but gained no order.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Order as Order Service (Tx A)
+    participant Product as Product Service (Tx B)
+    participant DB_Order as Order DB
+    participant DB_Product as Product DB
+
+    Client->>Order: createOrder()
+    Order->>Order: Start Tx A
+    
+    Order->>Product: deductStock() (Feign)
+    Product->>Product: Start Tx B
+    Product->>DB_Product: UPDATE stock = stock - 1
+    Product->>Product: Commit Tx B (Permanent!)
+    Product-->>Order: Success
+    
+    Order->>Order: ...Processing...
+    Note right of Order: 💥 ERROR / EXCEPTION 💥
+    
+    Order->>Order: Rollback Tx A
+    Note over DB_Order: No Order Created
+    Note over DB_Product: Stock Deducted (Inconsistent!)
+    Order-->>Client: Failure Response
+```
+
+### The Solution: Distributed Transaction Manager
+
+To solve this, we need a mechanism to ensure that **either all** services commit **or all** roll back, maintaining data consistency across the distributed system. This is where **Seata** comes in.
+
+*(Section under construction: Integration pending)*
+
 ## Modules
 
 ### Root Configuration

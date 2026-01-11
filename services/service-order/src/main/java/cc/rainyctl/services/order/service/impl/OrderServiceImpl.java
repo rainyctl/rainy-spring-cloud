@@ -12,6 +12,7 @@ import com.alibaba.csp.sentinel.annotation.SentinelResource;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.seata.spring.annotation.GlobalTransactional;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -41,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final DeductProductFeignClient deductProductFeignClient;
 
+    @GlobalTransactional
     @Transactional
     @SentinelResource(value = "createOrder", blockHandler = "createOrderFallback")
     @Override
@@ -79,7 +81,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 6. SIMULATE ERROR HERE
         // buy something in stock but trigger the rollback of Order here
-        // you will see the stock is deducted anyway while no order is created
+        // you will see the stock is deducted anyway while no order is created (if seata not integrated)
 //        if (true) {
 //            throw new RuntimeException("Simulated unexpected crash after remote call!");
 //        }

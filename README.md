@@ -245,7 +245,7 @@ We implemented a **manual Remote Procedure Call (RPC)** to connect the services.
 Instead of using OpenFeign (not wired yet), we did it manually to understand the core concept:
 1.  **Discovery**: We used `DiscoveryClient` to ask Nacos: *"Who handles 'service-product'?"*
 2.  **Selection**: We blindly picked the **first available instance** (`instances.get(0)`).
-3.  **Call**: We constructed a URL (`http://ip:port/product/{id}`) and fired a GET request using `RestTemplate`.
+3.  **Call**: We constructed a URL (`http://ip:port/api/product/{id}`) and fired a GET request using `RestTemplate`.
 
 **Code Snippet (`OrderServiceImpl.java`)**:
 ```java
@@ -414,7 +414,7 @@ public interface OrderItemMapper extends BaseMapper<OrderItem> {
 ```
 
 #### 4. Response Example
-After a successful `POST /order/create?userId=1&productId=2&count=3`, you will receive a JSON response similar to this:
+After a successful `POST /api/order/create?userId=1&productId=2&count=3`, you will receive a JSON response similar to this:
 
 ```json
 { 
@@ -463,7 +463,7 @@ public void callService() {
     ServiceInstance instance = loadBalancerClient.choose("service-product");
     
     // 2. Build the URL using the chosen instance's IP and Port
-    String url = String.format("http://%s:%s/product/%s", instance.getHost(), instance.getPort(), 1);
+    String url = String.format("http://%s:%s/api/product/%s", instance.getHost(), instance.getPort(), 1);
     
     // 3. Make the call
     restTemplate.getForObject(url, Product.class);
@@ -638,188 +638,74 @@ public class OrderController {
 ```
 
 #### 6. Verification
-1.  Call `GET http://localhost:8001/config`. You should see the values you set in Nacos.
-2.  Change the values in Nacos Console and Publish.
-3.  Call the endpoint again. You should see the **new values immediately** without restarting the service!
+Go to `http://localhost:8001/api/order/config`. You should see the values from Nacos. Change them in Nacos Console and refresh the page (no restart needed!).
+
+#### 7. Config Priority
+If you have the same key in both local `application.properties` and Nacos, **Nacos wins**.
+
+**Priority Order (High to Low)**:
+1.  **Command Line Args** (`--server.port=9000`)
+2.  **Nacos Configuration** (Remote)
+3.  **Local `application.properties`** (Inside jar)
+
+#### 8. Multi-Environment Support (Namespace)
+Nacos provides **Namespaces** to isolate environments (Dev, Test, Prod).
+
+1.  **Create Namespace**: In Nacos Console -> **Namespaces** -> **Create**.
+    *   Name: `dev`
+    *   ID: (Auto-generated UUID, e.g., `54e2...`)
+2.  **Configure Client**:
+    `application.properties`:
+    ```properties
+    spring.cloud.nacos.config.namespace=54e2... (Paste UUID here)
+    ```
+3.  **Clone Config**: You can clone configs from `public` to `dev` in the console.
+
+#### 9. Advanced Organization (Namespace > Group > Data ID)
+Think of it like a file system:
+*   **Namespace**: Folder (Dev, Prod)
+*   **Group**: Sub-folder (e.g., `ORDER_GROUP`, `PRODUCT_GROUP` - separating different teams/modules)
+*   **Data ID**: Filename (`service-order.properties`)
 
 ```mermaid
 graph TD
-    subgraph Nacos ["Nacos Server"]
-        Config["Config Data<br>(service-order.properties)"]
+    subgraph "Namespace: Dev"
+        subgraph "Group: ORDER_GROUP"
+            C1[service-order.properties]
+            C2[db-config.properties]
+        end
+        subgraph "Group: PRODUCT_GROUP"
+            C3[service-product.properties]
+        end
     end
-    
-    subgraph Service ["Order Service"]
-        Boot["Startup / Bootstrap"]
-        AppEnv["Spring Environment"]
-        Bean["@ConfigurationProperties Bean"]
-    end
-    
-    Boot -->|"1. Fetch Config"| Config
-    Config -->|"2. Return Properties"| Boot
-    Boot -->|"3. Load into"| AppEnv
-    AppEnv -->|"4. Inject Values"| Bean
-    
-    %% Dynamic Update Flow
-    User((User/Admin)) -->|"5. Update Config"| Config
-    Config -.->|"6. Push Change Event"| Service
-    Service -.->|"7. Refresh Context"| Bean
-    
-    style Config fill:#ffcc00,stroke:#333,stroke-width:2px,color:black
 ```
 
-### Advanced Configuration Topics
+#### 10. Single File for Multi-Profile (YAML)
+If you prefer keeping everything in one `bootstrap.yml` or `application.yml` and switching profiles:
 
-#### 1. Config Priorities
-When you use Nacos Config, it acts as an "External Configuration" source. In Spring Boot's property resolution order:
-
-1.  **High Priority**: Nacos Config (External)
-2.  **Low Priority**: Local `application.properties` / `application.yml`
-
-If a key exists in both, **Nacos wins**.
-
-```mermaid
-graph LR
-    High["High Priority Config<br>(Nacos)"]
-    Low["Low Priority Config<br>(Local)"]
-    
-    High --> Merge
-    Low --> Merge
-    
-    Merge{"Merge Strategy<br>External Overrides Local"} --> Effective["Effective Config"]
-    Effective --> Env["Spring Environment"]
-    
-    style High fill:#ff9999
-    style Low fill:#99ccff
-```
-
-#### 2. Multiple Imports & Priority
-You can import multiple configuration files from Nacos using `spring.config.import`.
-
-**Priority Rule**: In a list of imports, **later imports override earlier ones**.
-If `shared-database.properties` and `service-order.properties` both define `timeout`, the one listed **last** "wins".
-
-```properties
-# 1. shared-database (Base config)
-# 2. service-order (Specific config - Overrides shared if collision)
-spring.config.import=nacos:shared-database.properties?group=COMMON_GROUP,nacos:service-order.properties
-```
-
-#### 3. Data Organization (Namespace, Group, Data ID)
-Nacos uses a hierarchical model to organize configurations, solving the problem of multi-environment and multi-service management.
-
-*   **Namespace**: **Isolation**. Typically used for Environments (Dev, Test, Prod) or Tenants.
-    *   Default: `public`.
-*   **Group**: **Grouping**. Used for separating services or business units.
-    *   Default: `DEFAULT_GROUP`.
-*   **Data ID**: **File**. The actual configuration file for a service.
-    *   Format: `service-name.properties`.
-
-```mermaid
-graph LR
-    subgraph Env ["SpringBoot Environment"]
-        Dev[Dev Profile]
-        Prod[Prod Profile]
-    end
-
-    subgraph Nacos ["Nacos Data Model"]
-        NS["**Namespace**<br>Isolation (Dev/Test/Prod)"]
-        Group["**Group**<br>Category (DEFAULT_GROUP)"]
-        DataID["**Data ID**<br>Config File (service.properties)"]
-    end
-
-    Dev -->|"Activates"| NS
-    NS -->|"Contains"| Group
-    Group -->|"Contains"| DataID
-    
-    style NS fill:#e1f5fe,stroke:#01579b
-    style Group fill:#e8f5e9,stroke:#1b5e20
-    style DataID fill:#fff3e0,stroke:#e65100
-```
-
-#### 4. Multi-Environment Support (Best Practice)
-To support **Dev**, **Test**, and **Prod** environments, we use **Namespaces**.
-
-**1. Create Namespaces in Nacos**
-*   Log in to Nacos Console -> **Namespaces** -> **Create Namespace**.
-*   **Name**: `Dev`, **ID**: `dev` (Manually set the ID for easier config; otherwise it's a UUID).
-*   Repeat for `test` and `prod`.
-
-**2. Create Configs**
-*   Switch to `Dev` namespace. Create `service-order.properties` with dev settings.
-*   Switch to `Prod` namespace. Create `service-order.properties` with prod settings.
-
-**3. Activate in Spring Boot**
-Use Spring Profiles to switch namespaces.
-
-**application.properties** (Common):
-```properties
-spring.application.name=service-order
-# Default profile
-spring.profiles.active=dev
-```
-
-**application-dev.properties**:
-```properties
-# Connect to 'dev' namespace
-spring.cloud.nacos.config.namespace=dev
-spring.config.import=nacos:service-order.properties
-```
-
-**application-prod.properties**:
-```properties
-# Connect to 'prod' namespace
-spring.cloud.nacos.config.namespace=prod
-spring.config.import=nacos:service-order.properties
-```
-
-**4. Specifying Group and Data ID**
-*   **Namespace**: `spring.cloud.nacos.config.namespace`
-*   **Group**: Default is `DEFAULT_GROUP`. To change: `spring.cloud.nacos.config.group=MY_GROUP` or in import: `nacos:service-order.properties?group=MY_GROUP`.
-*   **Data ID**: Explicitly defined in the import statement (`service-order.properties`).
-
-**Alternative: Single YAML File (`application.yml`)**
-Instead of multiple `.properties` files, you can use a single `.yml` file with `---` separators to define profiles.
-
+`application.yml`:
 ```yaml
-# Common Configuration (Base)
 spring:
-  application:
-    name: service-order
   profiles:
-    active: dev # Default profile
----
-# Dev Profile Configuration
-spring:
+    active: dev
   config:
-    activate:
-      on-profile: dev
-  cloud:
-    nacos:
-      config:
-        namespace: dev
-        group: DEFAULT_GROUP
     import:
-      - nacos:service-order.properties
-      - nacos:service-common.properties?group=COMMON_GROUP
----
-# Prod Profile Configuration
-spring:
-  config:
-    activate:
-      on-profile: prod
-  cloud:
-    nacos:
-      config:
-        namespace: prod
-    import:
-      - nacos:service-order.properties
+      - nacos:service-order-dev.yml # explicit
 ```
 
-#### 5. Programmatic Config Listener
-Sometimes you need to trigger custom logic when a configuration changes (not just updating a Bean). You can register a `Listener` using the Nacos API.
+Or simpler:
+`spring.config.import=nacos:service-order.yml`
+Nacos will automatically look for `service-order.yml` AND `service-order-{profile}.yml`.
 
-**Example (`OrderMainApplication.java`)**:
-We added a listener to log changes whenever `service-order.properties` is updated.
+#### 11. Loading Multiple Configs
+You can load shared configs (like database settings) and service-specific configs together.
+
+```properties
+spring.config.import=nacos:service-order.properties, nacos:db-shared.properties?group=COMMON_GROUP
+```
+
+#### 12. Programmatic Listener (Advanced)
+You can listen for config changes in Java code.
 
 ```java
 @Bean
@@ -828,14 +714,10 @@ public ApplicationRunner nacosConfigListener(NacosConfigManager nacosConfigManag
         ConfigService configService = nacosConfigManager.getConfigService();
         configService.addListener("service-order.properties", "DEFAULT_GROUP", new Listener() {
             @Override
-            public Executor getExecutor() {
-                return Executors.newFixedThreadPool(4); // Async execution
-            }
-
-            @Override
             public void receiveConfigInfo(String configInfo) {
-                log.info("Nacos config info changed to: {}", configInfo);
+                System.out.println("Config Changed: " + configInfo);
             }
+            // ...
         });
     };
 }
@@ -844,18 +726,14 @@ public ApplicationRunner nacosConfigListener(NacosConfigManager nacosConfigManag
 ## 6. OpenFeign (Declarative RPC)
 
 ### What & Why
-**Concept**: A declarative web service client. You write an interface and annotate it; Spring Cloud generates the implementation at runtime.
-**Importance**:
-1.  **Cleaner Code**: Eliminates boilerplate `RestTemplate` code.
-2.  **Built-in Load Balancing**: Integrates seamlessly with Spring Cloud LoadBalancer.
-3.  **Type Safety**: Shared interfaces can ensure type safety between client and server.
+**Concept**: OpenFeign is a declarative web service client. It makes writing web service clients easier.
+**Difference**:
+*   **RestTemplate**: Imperative. You build the URL, set headers, and execute.
+*   **Feign**: Declarative. You define an interface, and Feign generates the implementation.
 
-### Implementation Status
-OpenFeign is present in the project (dependency + `ProductFeignClient`), but the running code path still uses `RestTemplate` + `@LoadBalanced`. To use Feign end-to-end, enable `@EnableFeignClients` in `OrderMainApplication` and switch `OrderServiceImpl` to call `ProductFeignClient`.
+### Setup
 
-### How to Use
-
-#### 1. Add Dependency
+#### 1. Dependency
 `service-order/pom.xml`:
 ```xml
 <dependency>
@@ -864,138 +742,82 @@ OpenFeign is present in the project (dependency + `ProductFeignClient`), but the
 </dependency>
 ```
 
-#### 2. Enable Feign Clients
-Add `@EnableFeignClients` to your main application class.
-
+#### 2. Enable Feign
 `OrderMainApplication.java`:
 ```java
 @EnableFeignClients
-@EnableDiscoveryClient
 @SpringBootApplication
 public class OrderMainApplication { ... }
 ```
 
 #### 3. Define Client Interface
-Create an interface that mirrors the Controller of the service you want to call.
-
 `ProductFeignClient.java`:
 ```java
-@FeignClient(name = "service-product") // <--- Service Name in Nacos
+// "service-product" is the application name in Nacos
+@FeignClient(name = "service-product") 
 public interface ProductFeignClient {
     
-    @GetMapping("/product/{id}") // <--- Endpoint signature
-    Product getProductById(@PathVariable("id") Long productId);
+    // Matches the Controller method signature in Product Service
+    @GetMapping("/api/product/{id}")
+    Product getProductById(@PathVariable("id") Long id);
 }
 ```
 
-#### 4. Inject and Use
+#### 4. Use It
 `OrderServiceImpl.java`:
 ```java
-@RequiredArgsConstructor
-@Service
-public class OrderServiceImpl implements OrderService {
+@Autowired
+private ProductFeignClient productFeignClient;
 
-    private final ProductFeignClient productFeignClient;
-
-    @Override
-    public Order createOrder(...) {
-        // RPC call (Load Balancing is automatic!)
-        Product product = productFeignClient.getProductById(productId);
-        // ...
-    }
+public Product getProduct(Long id) {
+    // Looks like a local method call!
+    return productFeignClient.getProductById(id);
 }
 ```
 
-#### 5. Call Third-Party APIs (Fixed Base URL)
-When calling a third-party API (not registered in Nacos), you typically use a fixed base URL.
+### Integration with LoadBalancer
+OpenFeign **automatically integrates** with Spring Cloud LoadBalancer. When you use `@FeignClient(name = "service-product")`, it will:
+1.  Look up `service-product` in Nacos.
+2.  Use the Load Balancer to pick an instance.
+3.  Send the request.
 
-**1. Configure base URL**
-`service-order/src/main/resources/application.properties`:
-```properties
-thirdparty.weather.base-url=https://example.com
-```
+### Advanced Usage
 
-**2. Define Feign client**
+#### 5. Calling Third-Party APIs (No Service Discovery)
+You can use Feign to call external APIs (like Google, Weather API) by specifying the `url`.
+
 ```java
-@FeignClient(name = "thirdparty-weather", url = "${thirdparty.weather.base-url}")
-public interface WeatherFeignClient {
-
-    @PostMapping("/whapi/json/alicityweather/condition")
-    String getWeather(
-            @RequestHeader("Authorization") String authorization,
-            @RequestParam("token") String token,
-            @RequestParam("cityId") String cityId
-    );
+@FeignClient(name = "weather-client", url = "https://api.weather.com")
+public interface WeatherClient {
+    @GetMapping("/current")
+    String getWeather();
 }
 ```
-
-**3. Call it**
-```java
-String json = weatherFeignClient.getWeather(
-        "Bearer <access-token>",
-        "<api-token>",
-        "101010100"
-);
-```
-
-Notes:
-- Don’t hardcode real credentials in code or README; load them from config or a secret manager.
-- With a fixed `url`, Feign is not doing service-discovery-based load balancing; any load balancing (if needed) is handled by DNS or a server-side load balancer in front of the third-party service.
 
 #### 6. Timeout Control
+By default, Feign (and the underlying client) has timeout limits. You can configure them in `application.properties`.
 
-By default, Feign sets conservative timeouts. In production, you must tune these to avoid cascading failures.
-
-**Default Values (Spring Cloud OpenFeign):**
-- **Connect Timeout**: 10s (Time to establish TCP connection)
-- **Read Timeout**: 60s (Time to wait for response after connection)
-
-**Configuration (`application.yml`):**
-You can configure timeouts globally (`default`) or per-client (e.g., `service-product`).
-
-```yaml
-spring:
-  cloud:
-    openfeign:
-      client:
-        config:
-          default: # Global settings
-            connectTimeout: 5000 # 5s
-            readTimeout: 5000    # 5s
-          
-          service-product: # Specific override
-            connectTimeout: 1000 # 1s (Fast internal call)
-            readTimeout: 2000    # 2s
+```properties
+# Connect Timeout: Time to establish connection
+spring.cloud.openfeign.client.config.default.connect-timeout=5000
+# Read Timeout: Time to wait for response
+spring.cloud.openfeign.client.config.default.read-timeout=5000
 ```
 
-**Timeout Flow:**
+**Granular Control**:
+You can set timeouts for specific clients:
+```properties
+spring.cloud.openfeign.client.config.service-product.read-timeout=2000
+```
 
 ```mermaid
-graph LR
-    subgraph Client ["Client (Order Service)"]
-        Req[Request]
-        Conn{"1. Connect<br>(connectTimeout)"}
-        Read{"2. Read<br>(readTimeout)"}
-    end
-    
-    subgraph Server ["Server (Product Service)"]
-        Process[Process Logic]
-    end
-    
-    Req --> Conn
-    Conn -- "Success (<1s)" --> Read
-    Conn -- "Fail (>1s)" --> Timeout[SocketTimeoutException]
-    
-    Read --> Process
-    Process --> Read
-    Read -- "Success (<2s)" --> Done[Return Data]
-    Read -- "Fail (>2s)" --> Timeout
-    
-    style Timeout fill:#ffcccc,stroke:#ff0000
-    style Done fill:#ccffcc,stroke:#00ff00
+graph TD
+    Client -->|"Connect (5s)"| Server
+    Client -->|"Read (Wait Response) (5s)"| Server
 ```
 
 #### 7. Retry Mechanism
+Does Feign retry failed requests?
 
 **Default Behavior**:
 By default, OpenFeign uses `Retryer.NEVER_RETRY`. This means if a call fails (e.g., timeout or network error), it throws an exception immediately without retrying.
@@ -1141,7 +963,7 @@ graph LR
 ### Core Concepts: Resources & Rules
 
 1.  **Resources**: Anything you want to protect.
-    *   **Auto-Adapted**: Web APIs (`/order/create`), Dubbo methods, Feign clients.
+    *   **Auto-Adapted**: Web APIs (`/api/order/create`), Dubbo methods, Feign clients.
     *   **Manual**: Code blocks wrapped in `@SentinelResource`.
 2.  **Rules**: Policies applied to resources.
     *   **Flow Control (`FlowRule`)**: Limit QPS (e.g., max 10 req/s).
@@ -1199,7 +1021,7 @@ public Order createOrder(...) {
 **2. Register Resource**:
 Sentinel is lazy-loaded. You must trigger the endpoint once to see it in the dashboard.
 ```bash
-curl -X POST "http://localhost:8001/order/create?userId=1&productId=1&count=1"
+curl -X POST "http://localhost:8001/api/order/create?userId=1&productId=1&count=1"
 ```
 
 **3. Configure Rule**:
@@ -1598,6 +1420,76 @@ Besides AT Mode (default), Seata supports three other modes for different scenar
     *   **Pros**: Strong consistency; standard.
     *   **Cons**: Blocking (locks resources until global commit); lower performance.
     *   **Use Case**: Financial systems requiring strict ACID compliance.
+
+## 10. Complete System Architecture
+
+Here is the "Big Picture" of the `rainy-spring-cloud` system, integrating all 9 key components.
+
+```mermaid
+graph TD
+    User((User))
+    
+    subgraph "Control Plane"
+        Nacos[("Nacos<br>(Registry & Config)<br>:8848")]
+        Sentinel[("Sentinel Dashboard<br>(Monitoring)<br>:8859")]
+        Seata[("Seata Server<br>(Tx Coordinator)<br>:8091")]
+    end
+    
+    subgraph "Data Plane"
+        Gateway[("API Gateway<br>:7777")]
+        
+        subgraph "Service Cluster"
+            Order[("Order Service<br>:8001")]
+            Product[("Product Service<br>:9001")]
+        end
+        
+        subgraph "Storage"
+            DB_Order[(Order DB)]
+            DB_Product[(Product DB)]
+        end
+    end
+
+    %% User Flow
+    User -->|1. Request| Gateway
+    Gateway -->|2. Route & Filter| Order
+    Gateway -->|2. Route & Filter| Product
+    
+    %% Service Interactions
+    Order -->|3. Feign RPC| Product
+    
+    %% Infrastructure Connections
+    Gateway -.->|Register/Discover| Nacos
+    Order -.->|Register/Discover/Config| Nacos
+    Product -.->|Register/Discover/Config| Nacos
+    
+    Order -.->|Metrics/Rules| Sentinel
+    Product -.->|Metrics/Rules| Sentinel
+    
+    Order <-->|Global Tx| Seata
+    Product <-->|Global Tx| Seata
+    
+    Order -->|CRUD| DB_Order
+    Product -->|CRUD| DB_Product
+
+    classDef control fill:#fab1a0,stroke:#333,stroke-width:2px;
+    classDef service fill:#74b9ff,stroke:#333,stroke-width:2px;
+    classDef storage fill:#dfe6e9,stroke:#333,stroke-width:2px;
+    
+    class Nacos,Sentinel,Seata control;
+    class Gateway,Order,Product service;
+    class DB_Order,DB_Product storage;
+```
+
+**Component Summary**:
+1.  **Nacos**: The brain. Handles Service Registry (Who is where?) and Configuration (What settings?).
+2.  **Sentinel**: The guard. Protects services with Flow Control and Circuit Breaking.
+3.  **Seata**: The judge. Ensures Distributed Transaction consistency (All commit or All rollback).
+4.  **Gateway**: The door. Unified entry point, routing, and filtering.
+5.  **Order Service**: The consumer. Orchestrates business logic.
+6.  **Product Service**: The provider. Manages inventory.
+7.  **OpenFeign**: The phone. Makes remote calls look like local method calls.
+8.  **LoadBalancer**: The traffic cop. Distributes requests among service instances.
+9.  **Database**: The vault. Stores data with Seata `undo_log` support.
 
 ## Modules
 

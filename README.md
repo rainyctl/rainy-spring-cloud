@@ -1577,6 +1577,28 @@ graph TD
     style Restore fill:#f99,stroke:#333
 ```
 
+### Other Seata Modes (Brief Comparison)
+
+Besides AT Mode (default), Seata supports three other modes for different scenarios:
+
+1.  **TCC Mode (Try-Confirm-Cancel)**
+    *   **Mechanism**: You manually implement three methods: `prepare` (Try), `commit` (Confirm), and `rollback` (Cancel).
+    *   **Pros**: High performance; doesn't rely on database transactions.
+    *   **Cons**: Invasive (requires writing a lot of code).
+    *   **Use Case**: High-concurrency scenarios or when resources are not databases (e.g., Redis).
+
+2.  **Saga Mode**
+    *   **Mechanism**: A sequence of local transactions. If one fails, compensating transactions are executed in reverse order.
+    *   **Pros**: Handles long-running business processes; asynchronous.
+    *   **Cons**: No isolation (dirty reads possible); complex compensation logic.
+    *   **Use Case**: Legacy systems or long chains of services.
+
+3.  **XA Mode**
+    *   **Mechanism**: Standard 2PC protocol supported by the database itself.
+    *   **Pros**: Strong consistency; standard.
+    *   **Cons**: Blocking (locks resources until global commit); lower performance.
+    *   **Use Case**: Financial systems requiring strict ACID compliance.
+
 ## Modules
 
 ### Root Configuration
